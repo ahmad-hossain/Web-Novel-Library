@@ -8,7 +8,7 @@ import android.widget.TextView
 import androidx.cardview.widget.CardView
 import androidx.recyclerview.widget.RecyclerView
 
-class FolderAdapter(private val folders: MutableList<String>, val clickListener: OnClickListener) : RecyclerView.Adapter<FolderAdapter.ViewHolder>() {
+class FolderAdapter(private val folders: MutableList<Folder>, val clickListener: OnClickListener) : RecyclerView.Adapter<FolderAdapter.ViewHolder>() {
 
     interface OnClickListener {
         fun onItemClicked(position: Int)
@@ -32,7 +32,7 @@ class FolderAdapter(private val folders: MutableList<String>, val clickListener:
             clickListener.onItemClicked(position)
         }
 
-        holder.folderName.text = element
+        holder.folderName.text = element.name
 
     }
 
