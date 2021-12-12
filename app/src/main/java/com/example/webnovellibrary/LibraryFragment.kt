@@ -1,7 +1,9 @@
 package com.example.webnovellibrary
 
 import android.app.AlertDialog
+import android.content.Context.MODE_PRIVATE
 import android.content.DialogInterface
+import android.content.SharedPreferences
 import android.os.Bundle
 import android.util.Log
 import android.view.*
@@ -12,13 +14,23 @@ import androidx.navigation.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.textfield.TextInputEditText
+import android.content.Context.MODE_PRIVATE
+
+import android.R.string.no
+import android.content.Context
+import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
+
+import android.content.Context.MODE_PRIVATE
+import android.preference.PreferenceManager
+import java.lang.reflect.Type
 
 
 class LibraryFragment : Fragment() {
 
     private val TAG = "LibraryFragment"
 
-    val folders = mutableListOf<Folder>()
+    var folders = mutableListOf<Folder>()
     lateinit var folderAdapter: FolderAdapter
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
@@ -36,7 +48,7 @@ class LibraryFragment : Fragment() {
 
                 //navigate to NovelFragment and pass a Folder
                 val action = LibraryFragmentDirections
-                    .actionLibraryFragmentToNovelsFragment(folders[position])
+                    .actionLibraryFragmentToNovelsFragment(folders[position], position)
                 view.findNavController().navigate(action)
             }
         }
@@ -100,37 +112,58 @@ class LibraryFragment : Fragment() {
         folderAdapter.notifyItemInserted(folders.size - 1)
     }
 
-    fun getData(): MutableList<String> {
-        val folders = mutableListOf<String>()
-        folders.add("One")
-        folders.add("Two")
-        folders.add("Three")
-        folders.add("Something")
-        folders.add("One")
-        folders.add("Two")
-        folders.add("Three")
-        folders.add("Something")
-        folders.add("One")
-        folders.add("Two")
-        folders.add("Three")
-        folders.add("Something")
-        folders.add("One")
-        folders.add("Two")
-        folders.add("Three")
-        folders.add("Something")
-        folders.add("One")
-        folders.add("Two")
-        folders.add("Three")
-        folders.add("Something")
-        folders.add("One")
-        folders.add("Two")
-        folders.add("Three")
-        folders.add("Something")
-        folders.add("One")
-        folders.add("Two")
-        folders.add("Three")
-        folders.add("Something")
+    override fun onStop() {
+        super.onStop()
+        //todo save this to file
 
-        return folders
+        saveData()
+
+        Log.d(TAG, "stopping")
+        Log.d(TAG, "there are ${folders.size} folders ")
+    }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        loadData()
+    }
+
+    fun saveData() {
+        val sharedPreferences: SharedPreferences =
+            activity!!.getSharedPreferences("shared preferences", MODE_PRIVATE)
+
+        val editor = sharedPreferences.edit()
+
+        val gson = Gson()
+
+        val json: String = gson.toJson(folders)
+
+        editor.putString("foldersList", json)
+
+        editor.apply()
+    }
+
+    fun loadData() {
+
+        val sharedPreferences: SharedPreferences =
+            activity!!.getSharedPreferences("shared preferences", MODE_PRIVATE)
+
+        val gson = Gson()
+
+        val emptyList = Gson().toJson(ArrayList<Folder>())
+        val json = sharedPreferences.getString("foldersList", emptyList)
+
+        val type: Type = object : TypeToken<ArrayList<Folder?>?>() {}.type
+
+        folders = gson.fromJson(json, type)
+
+        if (folders == null) {
+
+            folders = mutableListOf<Folder>()
+        }
+    }
+
+    fun updateFolder(folder: Folder, position: Int) {
+        folders[position] = folder
+        saveData()
     }
 }

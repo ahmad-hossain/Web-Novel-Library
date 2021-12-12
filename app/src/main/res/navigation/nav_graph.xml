@@ -22,5 +22,8 @@
         <argument
             android:name="folder"
             app:argType="com.example.webnovellibrary.Folder" />
+        <argument
+            android:name="position"
+            app:argType="integer" />
     </fragment>
 </navigation>

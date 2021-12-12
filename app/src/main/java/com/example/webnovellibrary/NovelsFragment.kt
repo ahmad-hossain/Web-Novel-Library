@@ -2,7 +2,6 @@ package com.example.webnovellibrary
 
 import android.R.attr
 import android.app.AlertDialog
-import android.content.DialogInterface
 import android.os.Bundle
 import android.util.Log
 import android.view.*
@@ -12,18 +11,22 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.textfield.TextInputEditText
 import android.R.attr.label
+import android.content.*
+import android.icu.text.CaseMap
+import android.preference.PreferenceManager
 
-import android.content.ClipData
-import android.content.ClipboardManager
-import android.content.Context
 import androidx.core.content.ContextCompat
 
 import androidx.core.content.ContextCompat.getSystemService
-
-
+import androidx.navigation.fragment.navArgs
+import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
+import java.lang.reflect.Type
 
 
 class NovelsFragment : Fragment() {
+
+    private val args by navArgs<NovelsFragmentArgs>()
 
     private val TAG = "NovelsFragment"
     lateinit var webNovelsList: MutableList<WebNovel>
@@ -34,9 +37,9 @@ class NovelsFragment : Fragment() {
 
         setHasOptionsMenu(true)
 
-//        private val args by navArgs<NovelsFragmentArgs>()     retrieve using args.folder
+        val folder = args.folder
 
-        val folder = NovelsFragmentArgs.fromBundle(requireArguments()).folder
+//        val folder = NovelsFragmentArgs.fromBundle(requireArguments()).folder
         webNovelsList = folder.webNovels
 
         //hardcoded for testing
@@ -166,5 +169,60 @@ class NovelsFragment : Fragment() {
         Log.d(TAG, "adding new webNovel $title with url: $url")
         webNovelsList.add( WebNovel(title, url) )
         novelsAdapter.notifyItemInserted(webNovelsList.size - 1)
+    }
+
+    override fun onStop() {
+        super.onStop()
+
+        Log.d(TAG, "onStop: previous novels num: ${args.folder.webNovels.size}")
+        args.folder.webNovels = webNovelsList
+        Log.d(TAG, "onStop: new novels num: ${args.folder.webNovels.size}")
+
+        //load the old folders data
+        val oldFolders = loadData()
+
+        //update the current folder
+        oldFolders[args.position] = args.folder
+
+        //save the new data
+        saveData(oldFolders)
+
+    }
+    
+    fun loadData(): MutableList<Folder> {
+
+        val sharedPreferences: SharedPreferences =
+            activity!!.getSharedPreferences("shared preferences", Context.MODE_PRIVATE)
+
+        val gson = Gson()
+
+        val emptyList = Gson().toJson(ArrayList<Folder>())
+        val json = sharedPreferences.getString("foldersList", emptyList)
+
+        val type: Type = object : TypeToken<ArrayList<Folder?>?>() {}.type
+
+        var oldFolders: MutableList<Folder> = gson.fromJson(json, type)
+
+        if (oldFolders == null) {
+
+            oldFolders = mutableListOf<Folder>()
+        }
+
+        return oldFolders
+    }
+
+    fun saveData(folders: MutableList<Folder>) {
+        val sharedPreferences: SharedPreferences =
+            activity!!.getSharedPreferences("shared preferences", Context.MODE_PRIVATE)
+
+        val editor = sharedPreferences.edit()
+
+        val gson = Gson()
+
+        val json: String = gson.toJson(folders)
+
+        editor.putString("foldersList", json)
+
+        editor.apply()
     }
 }

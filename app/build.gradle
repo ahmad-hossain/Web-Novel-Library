@@ -3,6 +3,7 @@ plugins {
     id 'kotlin-android'
 
     id 'androidx.navigation.safeargs.kotlin'
+    id 'kotlin-parcelize'
 }
 
 android {
@@ -47,5 +48,6 @@ dependencies {
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.4.0'
 
     implementation("androidx.fragment:fragment-ktx:1.4.0")
+    implementation "com.google.code.gson:gson:2.8.5"
 
 }
