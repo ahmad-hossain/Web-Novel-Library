@@ -32,9 +32,9 @@ class LibraryFragment : Fragment() {
         //click listener for RecyclerView items
         val onClickListener = object: FolderAdapter.OnClickListener {
             override fun onItemClicked(position: Int) {
-                Toast.makeText(context, "Clicked ${folders[position].name}", Toast.LENGTH_SHORT).show()
+                Log.d(TAG, "onItemClicked: clicked ${folders[position].name}")
 
-                //TODO navigate to NovelFragment and pass a Folder
+                //navigate to NovelFragment and pass a Folder
                 val action = LibraryFragmentDirections
                     .actionLibraryFragmentToNovelsFragment(folders[position])
                 view.findNavController().navigate(action)

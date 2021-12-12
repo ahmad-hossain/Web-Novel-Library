@@ -1,5 +1,6 @@
 package com.example.webnovellibrary
 
+import android.R.attr
 import android.app.AlertDialog
 import android.content.DialogInterface
 import android.os.Bundle
@@ -10,6 +11,17 @@ import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.textfield.TextInputEditText
+import android.R.attr.label
+
+import android.content.ClipData
+import android.content.ClipboardManager
+import android.content.Context
+import androidx.core.content.ContextCompat
+
+import androidx.core.content.ContextCompat.getSystemService
+
+
+
 
 class NovelsFragment : Fragment() {
 
@@ -42,6 +54,56 @@ class NovelsFragment : Fragment() {
                 Toast.makeText(context, "Clicked ${webNovelsList[position].title}", Toast.LENGTH_SHORT).show()
 
             }
+
+            override fun onCopyClicked(position: Int) {
+                Log.d(TAG, "onCopyClicked: clicked copy for ${webNovelsList[position].title}")
+
+                val clipboard: ClipboardManager? =
+                    context?.let { getSystemService(it, ClipboardManager::class.java) }
+                val clip = ClipData.newPlainText(label.toString(), webNovelsList[position].url)
+                clipboard?.setPrimaryClip(clip)
+
+                Toast.makeText(context, "Copied URL!", Toast.LENGTH_SHORT).show()
+            }
+
+            override fun onEditClicked(position: Int) {
+                Log.d(TAG, "onEditClicked: clicked edit for ${webNovelsList[position].title}")
+
+                val builder = AlertDialog.Builder(context)
+                builder.setTitle("Edit Web Novel")
+
+                val viewInflated: View = LayoutInflater.from(context)
+                    .inflate(R.layout.popup_web_novel, view as ViewGroup?, false)
+
+                // Set up the input
+                val webNovelTitle = viewInflated.findViewById(R.id.et_webNovel_name) as TextInputEditText
+                val webNovelUrl = viewInflated.findViewById(R.id.et_webNovel_url) as TextInputEditText
+
+                webNovelTitle.setText(webNovelsList[position].title)
+                webNovelUrl.setText(webNovelsList[position].url)
+
+                // Specify the type of input expected
+                builder.setView(viewInflated)
+
+                builder.setPositiveButton(android.R.string.ok,
+                    DialogInterface.OnClickListener { dialog, which ->
+                        dialog.dismiss()
+
+                        //update WebNovel data in webNovelList
+                        webNovelsList[position].title = webNovelTitle.text.toString()
+                        webNovelsList[position].url = webNovelUrl.text.toString()
+
+
+                        //make RecyclerView show updated WebNovel
+                        novelsAdapter.notifyItemChanged(position)
+                    })
+
+                builder.setNegativeButton(android.R.string.cancel,
+                    DialogInterface.OnClickListener { dialog, which -> dialog.cancel() })
+
+                builder.show()
+
+            }
         }
 
         //Setup and display the RecyclerView
@@ -52,22 +114,8 @@ class NovelsFragment : Fragment() {
         return view
     }
 
-    fun getData(): MutableList<WebNovel> {
-        val l = mutableListOf<WebNovel>()
-        l.add( WebNovel("Google", "https://google.com") )
-        l.add( WebNovel("Bing", "https://bing.com") )
-        l.add( WebNovel("Google", "https://google.com") )
-        l.add( WebNovel("Bing", "https://bing.com") )
-        l.add( WebNovel("Google", "https://google.com") )
-        l.add( WebNovel("Bing", "https://bing.com") )
-        l.add( WebNovel("Google", "https://google.com") )
-        l.add( WebNovel("Bing", "https://bing.com") )
-        return l
-    }
-
     //adds items in menu resource file to the toolbar
     override fun onCreateOptionsMenu(menu: Menu, menuInflater: MenuInflater) {
-//        menu.clear()
         menuInflater.inflate(R.menu.menu_toolbar_novels, menu)
         return super.onCreateOptionsMenu(menu, menuInflater)
     }

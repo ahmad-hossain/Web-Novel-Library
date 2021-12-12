@@ -3,6 +3,8 @@ package com.example.webnovellibrary
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Button
+import android.widget.ImageButton
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.cardview.widget.CardView
@@ -12,12 +14,17 @@ class NovelsAdapter(private val webNovels: List<WebNovel>, val clickListener: No
 
     interface OnClickListener {
         fun onItemClicked(position: Int)
+        fun onCopyClicked(position: Int)
+        fun onEditClicked(position: Int)
     }
 
     inner class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val webNovelName = itemView.findViewById(R.id.tv_webNovel_name) as TextView
         val webNovelUrl = itemView.findViewById(R.id.tv_webNovel_url) as TextView
         val cardView = itemView.findViewById(R.id.card_view) as CardView
+
+        val copyButton = itemView.findViewById(R.id.bt_copy) as ImageButton
+        val editButton = itemView.findViewById(R.id.bt_edit) as ImageButton
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
@@ -32,6 +39,13 @@ class NovelsAdapter(private val webNovels: List<WebNovel>, val clickListener: No
         holder.cardView.setOnClickListener {
             clickListener.onItemClicked(position)
         }
+        holder.copyButton.setOnClickListener {
+            clickListener.onCopyClicked(position)
+        }
+        holder.editButton.setOnClickListener {
+            clickListener.onEditClicked(position)
+        }
+
 
         holder.webNovelName.text = element.title
         holder.webNovelUrl.text = element.url
