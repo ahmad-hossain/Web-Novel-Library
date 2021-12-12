@@ -7,7 +7,7 @@
     android:layout_height="wrap_content"
     app:cardCornerRadius="8dp"
     app:cardElevation="8dp"
-    android:layout_marginVertical="5dp"
+    android:layout_margin="5dp"
     android:id="@+id/card_view">
 
     <!--TODO add a copy button and 3 dots or long press for editing, open in browser on click -->
