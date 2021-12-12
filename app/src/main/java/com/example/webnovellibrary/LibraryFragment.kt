@@ -8,6 +8,7 @@ import android.view.*
 import android.view.LayoutInflater
 import android.widget.Toast
 import androidx.fragment.app.Fragment
+import androidx.navigation.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.textfield.TextInputEditText
@@ -32,8 +33,11 @@ class LibraryFragment : Fragment() {
         val onClickListener = object: FolderAdapter.OnClickListener {
             override fun onItemClicked(position: Int) {
                 Toast.makeText(context, "Clicked ${folders[position].name}", Toast.LENGTH_SHORT).show()
+
                 //TODO navigate to NovelFragment and pass a Folder
-                                
+                val action = LibraryFragmentDirections
+                    .actionLibraryFragmentToNovelsFragment(folders[position])
+                view.findNavController().navigate(action)
             }
         }
 

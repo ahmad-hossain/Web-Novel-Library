@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    xmlns:cardView="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    cardView:cardCornerRadius="8dp"
+    cardView:cardElevation="8dp"
+    android:layout_margin="8dp"
+    android:id="@+id/card_view">
+
+    <!--TODO add a copy button and 3 dots or long press for editing, open in browser on click -->
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:padding="8dp"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/tv_webNovel_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="30sp"
+            tools:text="Google" />
+
+        <TextView
+            android:id="@+id/tv_webNovel_url"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            tools:text="https://example.com" />
+    </LinearLayout>
+
+</androidx.cardview.widget.CardView>

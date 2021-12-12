@@ -18,5 +18,9 @@
         android:id="@+id/novelsFragment"
         android:name="com.example.webnovellibrary.NovelsFragment"
         android:label="fragment_novels"
-        tools:layout="@layout/fragment_novels" />
+        tools:layout="@layout/fragment_novels" >
+        <argument
+            android:name="folder"
+            app:argType="com.example.webnovellibrary.Folder" />
+    </fragment>
 </navigation>
