@@ -66,45 +66,6 @@ class NovelsFragment : Fragment() {
                 Toast.makeText(context, "Copied URL!", Toast.LENGTH_SHORT).show()
             }
 
-            override fun onEditClicked(position: Int) {
-                Log.d(TAG, "onEditClicked: clicked edit for index $position")
-
-                val builder = AlertDialog.Builder(context)
-                builder.setTitle("Edit Web Novel")
-
-                val viewInflated: View = LayoutInflater.from(context)
-                    .inflate(R.layout.popup_web_novel, view as ViewGroup?, false)
-
-                // Set up the input
-                val webNovelTitle = viewInflated.findViewById(R.id.et_webNovel_name) as TextInputEditText
-                val webNovelUrl = viewInflated.findViewById(R.id.et_webNovel_url) as TextInputEditText
-
-                webNovelTitle.setText(webNovelsList[position].title)
-                webNovelUrl.setText(webNovelsList[position].url)
-
-                // Specify the type of input expected
-                builder.setView(viewInflated)
-
-                builder.setPositiveButton(android.R.string.ok,
-                    DialogInterface.OnClickListener { dialog, which ->
-                        dialog.dismiss()
-
-                        //update WebNovel data in webNovelList
-                        webNovelsList[position].title = webNovelTitle.text.toString()
-                        webNovelsList[position].url = webNovelUrl.text.toString()
-
-
-                        //make RecyclerView show updated WebNovel
-                        novelsAdapter.notifyItemChanged(position)
-                    })
-
-                builder.setNegativeButton(android.R.string.cancel,
-                    DialogInterface.OnClickListener { dialog, which -> dialog.cancel() })
-
-                builder.show()
-
-            }
-
             override fun onMoreClicked(position: Int) {
                 Log.d(TAG, "onMoreClicked: clicked more for index $position")
                 showBottomSheetDialog(position)
@@ -237,7 +198,7 @@ class NovelsFragment : Fragment() {
         val delete = bottomSheetDialog?.findViewById<LinearLayout>(R.id.ll_delete)
 
         move?.setOnClickListener { 
-            Toast.makeText(context, "clicked Move", Toast.LENGTH_SHORT).show()
+            Toast.makeText(context, "clicked Move. Not implemented.", Toast.LENGTH_SHORT).show()
         }
         edit?.setOnClickListener {
             Log.d(TAG, "showBottomSheetDialog: edit clicked at index $position")

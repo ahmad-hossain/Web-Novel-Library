@@ -6,22 +6,22 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     app:cardCornerRadius="8dp"
-    app:cardElevation="8dp"
-    android:layout_margin="5dp"
+    android:layout_marginHorizontal="2dp"
+    android:layout_marginVertical="2dp"
     android:id="@+id/card_view">
 
-    <!--TODO add a copy button and 3 dots or long press for editing, open in browser on click -->
+    <!--TODO open in browser on click -->
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/constraint_layout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:padding="8dp">
+        android:padding="8dp"
+        style="@style/Theme.WebNovelLibrary.Card">
 
         <TextView
             android:id="@+id/tv_webNovel_name"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textSize="30sp"
             app:layout_constraintStart_toStartOf="@+id/constraint_layout"
             app:layout_constraintTop_toTopOf="@+id/constraint_layout"
             tools:text="Google" />
@@ -30,8 +30,10 @@
             android:id="@+id/tv_webNovel_url"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:textSize="10sp"
             app:layout_constraintStart_toStartOf="@+id/constraint_layout"
             app:layout_constraintTop_toBottomOf="@+id/tv_webNovel_name"
+            app:layout_constraintBottom_toBottomOf="@id/constraint_layout"
             tools:text="https://example.com" />
 
         <ImageButton
@@ -40,22 +42,11 @@
             android:layout_height="wrap_content"
             app:layout_constraintTop_toTopOf="@id/constraint_layout"
             app:layout_constraintBottom_toBottomOf="@id/constraint_layout"
-            app:layout_constraintEnd_toStartOf="@+id/bt_edit"
+            app:layout_constraintEnd_toStartOf="@+id/bt_more"
             android:layout_marginEnd="10dp"
-            android:padding="10dp"
+            android:padding="5dp"
             android:background="?android:selectableItemBackgroundBorderless"
             android:src="@drawable/ic_baseline_content_copy_24" />
-
-        <ImageButton
-            android:id="@+id/bt_edit"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            app:layout_constraintTop_toTopOf="@id/constraint_layout"
-            app:layout_constraintBottom_toBottomOf="@id/constraint_layout"
-            app:layout_constraintEnd_toStartOf="@id/bt_more"
-            android:padding="10dp"
-            android:background="?android:selectableItemBackgroundBorderless"
-            android:src="@drawable/ic_baseline_edit_24" />
 
         <ImageButton
             android:id="@+id/bt_more"
@@ -64,7 +55,7 @@
             app:layout_constraintTop_toTopOf="@id/constraint_layout"
             app:layout_constraintBottom_toBottomOf="@id/constraint_layout"
             app:layout_constraintEnd_toEndOf="@id/constraint_layout"
-            android:padding="10dp"
+            android:padding="5dp"
             android:background="?android:selectableItemBackgroundBorderless"
             android:src="@drawable/ic_baseline_more_vert_24" />
 

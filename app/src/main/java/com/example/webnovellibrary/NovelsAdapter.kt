@@ -15,7 +15,6 @@ class NovelsAdapter(private val webNovels: List<WebNovel>, val clickListener: No
     interface OnClickListener {
         fun onItemClicked(position: Int)
         fun onCopyClicked(position: Int)
-        fun onEditClicked(position: Int)
         fun onMoreClicked(position: Int)
     }
 
@@ -25,7 +24,6 @@ class NovelsAdapter(private val webNovels: List<WebNovel>, val clickListener: No
         val cardView: CardView
 
         val copyButton: ImageButton
-        val editButton: ImageButton
         val moreButton: ImageButton
 
         init {
@@ -34,7 +32,6 @@ class NovelsAdapter(private val webNovels: List<WebNovel>, val clickListener: No
             cardView = itemView.findViewById(R.id.card_view)
 
             copyButton = itemView.findViewById(R.id.bt_copy)
-            editButton = itemView.findViewById(R.id.bt_edit)
             moreButton = itemView.findViewById(R.id.bt_more)
 
             cardView.setOnClickListener {
@@ -42,9 +39,6 @@ class NovelsAdapter(private val webNovels: List<WebNovel>, val clickListener: No
             }
             copyButton.setOnClickListener {
                 clickListener.onCopyClicked(adapterPosition)
-            }
-            editButton.setOnClickListener {
-                clickListener.onEditClicked(adapterPosition)
             }
             moreButton.setOnClickListener {
                 clickListener.onMoreClicked(adapterPosition)
@@ -60,19 +54,6 @@ class NovelsAdapter(private val webNovels: List<WebNovel>, val clickListener: No
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val element = webNovels[position]
-
-//        holder.cardView.setOnClickListener {
-//            clickListener.onItemClicked(position)
-//        }
-//        holder.copyButton.setOnClickListener {
-//            clickListener.onCopyClicked(position)
-//        }
-//        holder.editButton.setOnClickListener {
-//            clickListener.onEditClicked(position)
-//        }
-//        holder.moreButton.setOnClickListener {
-//            clickListener.onMoreClicked(position)
-//        }
 
         holder.webNovelName.text = element.title
         holder.webNovelUrl.text = element.url
