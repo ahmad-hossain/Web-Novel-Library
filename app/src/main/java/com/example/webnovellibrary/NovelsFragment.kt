@@ -1,24 +1,21 @@
 package com.example.webnovellibrary
 
-import android.R.attr
+import android.R.attr.bottom
+import android.R.attr.label
 import android.app.AlertDialog
+import android.content.*
 import android.os.Bundle
 import android.util.Log
 import android.view.*
+import android.widget.LinearLayout
 import android.widget.Toast
+import androidx.core.content.ContextCompat.getSystemService
 import androidx.fragment.app.Fragment
+import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.textfield.TextInputEditText
-import android.R.attr.label
-import android.content.*
-import android.icu.text.CaseMap
-import android.preference.PreferenceManager
-
-import androidx.core.content.ContextCompat
-
-import androidx.core.content.ContextCompat.getSystemService
-import androidx.navigation.fragment.navArgs
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import java.lang.reflect.Type
@@ -59,7 +56,7 @@ class NovelsFragment : Fragment() {
             }
 
             override fun onCopyClicked(position: Int) {
-                Log.d(TAG, "onCopyClicked: clicked copy for ${webNovelsList[position].title}")
+                Log.d(TAG, "onCopyClicked: clicked copy for index $position")
 
                 val clipboard: ClipboardManager? =
                     context?.let { getSystemService(it, ClipboardManager::class.java) }
@@ -70,7 +67,7 @@ class NovelsFragment : Fragment() {
             }
 
             override fun onEditClicked(position: Int) {
-                Log.d(TAG, "onEditClicked: clicked edit for ${webNovelsList[position].title}")
+                Log.d(TAG, "onEditClicked: clicked edit for index $position")
 
                 val builder = AlertDialog.Builder(context)
                 builder.setTitle("Edit Web Novel")
@@ -106,6 +103,11 @@ class NovelsFragment : Fragment() {
 
                 builder.show()
 
+            }
+
+            override fun onMoreClicked(position: Int) {
+                Log.d(TAG, "onMoreClicked: clicked more for index $position")
+                showBottomSheetDialog(position)
             }
         }
 
@@ -224,5 +226,72 @@ class NovelsFragment : Fragment() {
         editor.putString("foldersList", json)
 
         editor.apply()
+    }
+
+    fun showBottomSheetDialog(position: Int) {
+        val bottomSheetDialog = context?.let { BottomSheetDialog(it) }
+        bottomSheetDialog?.setContentView(R.layout.bottom_sheet_dialog_novel)
+
+        val move = bottomSheetDialog?.findViewById<LinearLayout>(R.id.ll_move)
+        val edit = bottomSheetDialog?.findViewById<LinearLayout>(R.id.ll_edit)
+        val delete = bottomSheetDialog?.findViewById<LinearLayout>(R.id.ll_delete)
+
+        move?.setOnClickListener { 
+            Toast.makeText(context, "clicked Move", Toast.LENGTH_SHORT).show()
+        }
+        edit?.setOnClickListener {
+            Log.d(TAG, "showBottomSheetDialog: edit clicked at index $position")
+            editNovel(position)
+            bottomSheetDialog.dismiss()
+        }
+        delete?.setOnClickListener {
+            Log.d(TAG, "showBottomSheetDialog: delete clicked at index $position")
+
+            deleteNovel(position)
+            bottomSheetDialog.dismiss()
+        }
+
+        bottomSheetDialog?.show()
+    }
+
+    fun editNovel(position: Int) {
+        val builder = AlertDialog.Builder(context)
+        builder.setTitle("Edit Web Novel")
+
+        val viewInflated: View = LayoutInflater.from(context)
+            .inflate(R.layout.popup_web_novel, view as ViewGroup?, false)
+
+        // Set up the input
+        val webNovelTitle = viewInflated.findViewById(R.id.et_webNovel_name) as TextInputEditText
+        val webNovelUrl = viewInflated.findViewById(R.id.et_webNovel_url) as TextInputEditText
+
+        webNovelTitle.setText(webNovelsList[position].title)
+        webNovelUrl.setText(webNovelsList[position].url)
+
+        // Specify the type of input expected
+        builder.setView(viewInflated)
+
+        builder.setPositiveButton(android.R.string.ok,
+            DialogInterface.OnClickListener { dialog, which ->
+                dialog.dismiss()
+
+                //update WebNovel data in webNovelList
+                webNovelsList[position].title = webNovelTitle.text.toString()
+                webNovelsList[position].url = webNovelUrl.text.toString()
+
+
+                //make RecyclerView show updated WebNovel
+                novelsAdapter.notifyItemChanged(position)
+            })
+
+        builder.setNegativeButton(android.R.string.cancel,
+            DialogInterface.OnClickListener { dialog, which -> dialog.cancel() })
+
+        builder.show()
+    }
+
+    fun deleteNovel(position: Int) {
+        webNovelsList.removeAt(position)
+        novelsAdapter.notifyItemRemoved(position)
     }
 }

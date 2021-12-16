@@ -16,15 +16,40 @@ class NovelsAdapter(private val webNovels: List<WebNovel>, val clickListener: No
         fun onItemClicked(position: Int)
         fun onCopyClicked(position: Int)
         fun onEditClicked(position: Int)
+        fun onMoreClicked(position: Int)
     }
 
     inner class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        val webNovelName = itemView.findViewById(R.id.tv_webNovel_name) as TextView
-        val webNovelUrl = itemView.findViewById(R.id.tv_webNovel_url) as TextView
-        val cardView = itemView.findViewById(R.id.card_view) as CardView
+        val webNovelName: TextView
+        val webNovelUrl: TextView
+        val cardView: CardView
 
-        val copyButton = itemView.findViewById(R.id.bt_copy) as ImageButton
-        val editButton = itemView.findViewById(R.id.bt_edit) as ImageButton
+        val copyButton: ImageButton
+        val editButton: ImageButton
+        val moreButton: ImageButton
+
+        init {
+            webNovelName = itemView.findViewById(R.id.tv_webNovel_name)
+            webNovelUrl = itemView.findViewById(R.id.tv_webNovel_url)
+            cardView = itemView.findViewById(R.id.card_view)
+
+            copyButton = itemView.findViewById(R.id.bt_copy)
+            editButton = itemView.findViewById(R.id.bt_edit)
+            moreButton = itemView.findViewById(R.id.bt_more)
+
+            cardView.setOnClickListener {
+                clickListener.onItemClicked(adapterPosition)
+            }
+            copyButton.setOnClickListener {
+                clickListener.onCopyClicked(adapterPosition)
+            }
+            editButton.setOnClickListener {
+                clickListener.onEditClicked(adapterPosition)
+            }
+            moreButton.setOnClickListener {
+                clickListener.onMoreClicked(adapterPosition)
+            }
+        }
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
@@ -36,16 +61,18 @@ class NovelsAdapter(private val webNovels: List<WebNovel>, val clickListener: No
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val element = webNovels[position]
 
-        holder.cardView.setOnClickListener {
-            clickListener.onItemClicked(position)
-        }
-        holder.copyButton.setOnClickListener {
-            clickListener.onCopyClicked(position)
-        }
-        holder.editButton.setOnClickListener {
-            clickListener.onEditClicked(position)
-        }
-
+//        holder.cardView.setOnClickListener {
+//            clickListener.onItemClicked(position)
+//        }
+//        holder.copyButton.setOnClickListener {
+//            clickListener.onCopyClicked(position)
+//        }
+//        holder.editButton.setOnClickListener {
+//            clickListener.onEditClicked(position)
+//        }
+//        holder.moreButton.setOnClickListener {
+//            clickListener.onMoreClicked(position)
+//        }
 
         holder.webNovelName.text = element.title
         holder.webNovelUrl.text = element.url
