@@ -11,6 +11,7 @@ import android.widget.LinearLayout
 import android.widget.Toast
 import androidx.core.content.ContextCompat.getSystemService
 import androidx.fragment.app.Fragment
+import androidx.navigation.findNavController
 import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -36,11 +37,11 @@ class NovelsFragment : Fragment() {
 
         val folder = args.folder
 
+        //set the toolbar title to the folder name
+        (activity as MainActivity).supportActionBar?.title = folder.name
+
 //        val folder = NovelsFragmentArgs.fromBundle(requireArguments()).folder
         webNovelsList = folder.webNovels
-
-        //hardcoded for testing
-//        webNovelsList = getData()
 
         Log.d(TAG, "opened folder with name: ${folder.name} and ${webNovelsList.size} novels")
 
@@ -52,6 +53,10 @@ class NovelsFragment : Fragment() {
             override fun onItemClicked(position: Int) {
 
                 Toast.makeText(context, "Clicked ${webNovelsList[position].title}", Toast.LENGTH_SHORT).show()
+
+                val action = NovelsFragmentDirections.
+                    actionNovelsFragmentToWebViewFragment(webNovelsList[position].url)
+                view.findNavController().navigate(action)
 
             }
 
