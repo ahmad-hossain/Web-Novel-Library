@@ -8,15 +8,31 @@ import android.widget.TextView
 import androidx.cardview.widget.CardView
 import androidx.recyclerview.widget.RecyclerView
 
-class FolderAdapter(private val folders: MutableList<Folder>, val clickListener: OnClickListener) : RecyclerView.Adapter<FolderAdapter.ViewHolder>() {
+class FolderAdapter(private val folders: MutableList<Folder>, val clickListener: OnClickListener, val longClickListener: OnLongClickListener) : RecyclerView.Adapter<FolderAdapter.ViewHolder>() {
 
     interface OnClickListener {
         fun onItemClicked(position: Int)
     }
+    interface OnLongClickListener {
+        fun onItemLongClicked(position: Int)
+    }
 
     inner class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        val folderName = itemView.findViewById(R.id.tv_folder_name) as TextView
-        val linearLayout = itemView.findViewById(R.id.linear_layout) as LinearLayout
+        val folderName: TextView
+        val linearLayout: LinearLayout
+
+        init {
+            folderName = itemView.findViewById(R.id.tv_folder_name)
+            linearLayout = itemView.findViewById(R.id.linear_layout)
+
+            linearLayout.setOnClickListener {
+                clickListener.onItemClicked(adapterPosition)
+            }
+            linearLayout.setOnLongClickListener {
+                longClickListener.onItemLongClicked(adapterPosition)
+                true
+            }
+        }
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
@@ -27,10 +43,6 @@ class FolderAdapter(private val folders: MutableList<Folder>, val clickListener:
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val element = folders[position]
-
-        holder.linearLayout.setOnClickListener {
-            clickListener.onItemClicked(position)
-        }
 
         holder.folderName.text = element.name
 
