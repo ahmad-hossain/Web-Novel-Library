@@ -3,13 +3,21 @@ package com.example.webnovellibrary
 import android.R.attr.bottom
 import android.R.attr.label
 import android.app.AlertDialog
+import android.app.PendingIntent
 import android.content.*
+import android.graphics.Color
+import android.net.Uri
 import android.os.Bundle
 import android.util.Log
 import android.view.*
 import android.widget.LinearLayout
 import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.content.res.AppCompatResources
+import androidx.browser.customtabs.CustomTabsIntent
 import androidx.core.content.ContextCompat.getSystemService
+import androidx.core.graphics.drawable.DrawableCompat
+import androidx.core.graphics.drawable.toBitmap
 import androidx.fragment.app.Fragment
 import androidx.navigation.findNavController
 import androidx.navigation.fragment.navArgs
@@ -51,11 +59,10 @@ class NovelsFragment : Fragment() {
         //click listener for RecyclerView items
         val onClickListener = object: NovelsAdapter.OnClickListener {
             override fun onItemClicked(position: Int) {
-
-                Toast.makeText(context, "Clicked ${webNovelsList[position].title}", Toast.LENGTH_SHORT).show()
+                Log.d(TAG, "onItemClicked: clicked item $position")
 
                 val action = NovelsFragmentDirections.
-                    actionNovelsFragmentToWebViewFragment(webNovelsList[position].url)
+                    actionNovelsFragmentToWebViewFragment(url = webNovelsList[position].url, position = position)
                 view.findNavController().navigate(action)
 
             }
@@ -83,6 +90,18 @@ class NovelsFragment : Fragment() {
         rclView.layoutManager = LinearLayoutManager(context)
 
         return view
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        val navController = view.findNavController()
+        // Any type that can be put in a Bundle is supported
+        navController.currentBackStackEntry?.savedStateHandle?.getLiveData<List<String>>("key")?.observe(
+            viewLifecycleOwner) { result ->
+            // Update the novel's URL
+            val updatedUrl = result [0]
+            val pos = result[1]
+            webNovelsList[pos.toInt()].url = updatedUrl
+        }
     }
 
     //adds items in menu resource file to the toolbar

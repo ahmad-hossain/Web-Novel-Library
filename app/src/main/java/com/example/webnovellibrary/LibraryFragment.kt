@@ -136,7 +136,7 @@ class LibraryFragment : Fragment() {
         loadData()
     }
 
-    fun saveData() {
+    private fun saveData() {
         val sharedPreferences: SharedPreferences =
             activity!!.getSharedPreferences("shared preferences", MODE_PRIVATE)
 
@@ -151,7 +151,7 @@ class LibraryFragment : Fragment() {
         editor.apply()
     }
 
-    fun loadData() {
+    private fun loadData() {
 
         val sharedPreferences: SharedPreferences =
             activity!!.getSharedPreferences("shared preferences", MODE_PRIVATE)

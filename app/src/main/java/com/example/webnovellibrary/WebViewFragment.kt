@@ -1,36 +1,89 @@
 package com.example.webnovellibrary
 
-import android.app.AlertDialog
-import android.content.DialogInterface
 import android.os.Bundle
 import android.util.Log
 import android.view.*
 import androidx.fragment.app.Fragment
 import android.webkit.WebView
 import android.webkit.WebViewClient
+import android.widget.EditText
 import androidx.appcompat.app.AppCompatActivity
-import com.google.android.material.textfield.TextInputEditText
+
+import androidx.appcompat.widget.Toolbar
+import androidx.navigation.findNavController
+import androidx.navigation.fragment.NavHostFragment
+import androidx.navigation.fragment.findNavController
+import androidx.navigation.ui.AppBarConfiguration
+import androidx.navigation.ui.setupWithNavController
+import com.google.android.material.appbar.MaterialToolbar
+
 
 class WebViewFragment : Fragment() {
 
-    lateinit var webView: WebView
+    private val TAG = "WebViewFragment"
+
+    lateinit var mainToolbar: MaterialToolbar
+    lateinit var webViewToolbar: Toolbar
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         // Inflate the layout for this fragment
         val view = inflater.inflate(R.layout.fragment_web_view, container, false)
 
-        setHasOptionsMenu(true)
-
         val url: String = WebViewFragmentArgs.fromBundle(requireArguments()).url
+        val position: Int = WebViewFragmentArgs.fromBundle(requireArguments()).position
 
-        webView = view.findViewById(R.id.webview)
+//        setHasOptionsMenu(true)
+
+        //hide the main toolbar
+        mainToolbar = (activity as AppCompatActivity).findViewById(R.id.toolbar)
+        mainToolbar.visibility = View.GONE
+
+        //set custom toolbar from xml
+        webViewToolbar = view.findViewById<Toolbar>(R.id.webview_toolbar)
+        (activity as AppCompatActivity).setSupportActionBar(webViewToolbar)
+
+        //setup toolbar with nav to enable using UP button
+        val navHostFragment = (activity as AppCompatActivity).supportFragmentManager.findFragmentById(R.id.nav_host_fragment) as NavHostFragment
+        val navController = navHostFragment.navController
+        val builder = AppBarConfiguration.Builder(navController.graph)
+        val appBarConfiguration = builder.build()
+        webViewToolbar.setupWithNavController(navController, appBarConfiguration)
+
+
+        val webView = view.findViewById<WebView>(R.id.webview)
+
         webView.settings.javaScriptEnabled = true
-        webView.loadUrl("https://www.google.com")
-        webView.webViewClient = WebViewClient()
 
-        webView.setOnKeyListener { _, _, keyEvent ->
+        webView.loadUrl(url)
+
+        //scroll to top of webpage
+        webView.scrollTo(0,0)
+
+        val mWebViewClient: WebViewClient = object : WebViewClient() {
+            //called every time URL changes
+            override fun doUpdateVisitedHistory(wv: WebView?, url: String?, isReload: Boolean) {
+                super.doUpdateVisitedHistory(wv, url, isReload)
+
+                Log.d(TAG, "URL CHANGE to $url")
+
+                if (view != null) {
+                    //Update address bar
+                    view.findViewById<EditText>(R.id.et_address_bar).setText(url)
+
+                    //Save the novel position and the last url to send back to NovelsFragment
+
+                    navController.previousBackStackEntry?.savedStateHandle?.set("key", listOf(url, "$position"))
+                }
+
+            }
+        }
+
+        webView.webViewClient = mWebViewClient
+
+        //enable using back button to go to prev. webpage. Returns to prev. Frag. if can't go back anymore
+        webView.setOnKeyListener { view, i, keyEvent ->
             if (keyEvent.keyCode == KeyEvent.KEYCODE_BACK && webView.canGoBack()) {
-                webView.goBack()
+                webView.goBack() // Navigate back to previous web page if there is one
                 return@setOnKeyListener true
             }
             return@setOnKeyListener false
@@ -39,51 +92,12 @@ class WebViewFragment : Fragment() {
         return view
     }
 
-    //TODO adds items in menu resource file to the toolbar
-//    override fun onCreateOptionsMenu(menu: Menu, menuInflater: MenuInflater) {
-//        menuInflater.inflate(R.menu.menu_toolbar_novels, menu)
-//        return super.onCreateOptionsMenu(menu, menuInflater)
-//    }
+    override fun onDestroyView() {
+        super.onDestroyView()
 
-    //TODO does something when a menu item is selected
-//    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-//        when (item.itemId) {
-//            R.id.add_webNovel -> {
-//                val builder = AlertDialog.Builder(context)
-//                builder.setTitle("Add Web Novel")
-//
-//                val viewInflated: View = LayoutInflater.from(context)
-//                    .inflate(R.layout.popup_web_novel, view as ViewGroup?, false)
-//
-//                // Set up the input
-//                val webNovelTitle = viewInflated.findViewById(R.id.et_webNovel_name) as TextInputEditText
-//                val webNovelUrl = viewInflated.findViewById(R.id.et_webNovel_url) as TextInputEditText
-//
-//                // Specify the type of input expected
-//                builder.setView(viewInflated)
-//
-//                builder.setPositiveButton(android.R.string.ok,
-//                    DialogInterface.OnClickListener { dialog, which ->
-//                        dialog.dismiss()
-//
-//                        val title = webNovelTitle.text.toString()
-//                        val url = webNovelUrl.text.toString()
-//
-//                        Log.d(TAG, "new web novel requested: $title")
-//
-//                        addNovel(title, url)
-//
-//                    })
-//
-//                builder.setNegativeButton(android.R.string.cancel,
-//                    DialogInterface.OnClickListener { dialog, which -> dialog.cancel() })
-//
-//                builder.show()
-//
-//                return true
-//            }
-//        }
-//
-//        return false
-//    }
+        //switch back to main toolbar by making it visible again
+        mainToolbar.visibility = View.VISIBLE
+        (activity as AppCompatActivity).setSupportActionBar(mainToolbar)
+    }
+
 }
