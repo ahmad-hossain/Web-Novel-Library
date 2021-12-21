@@ -20,6 +20,7 @@
             android:layout_height="match_parent"
             android:layout_gravity="left"
             android:singleLine="true"
+            android:selectAllOnFocus="true"
             android:textColor="@color/black" />
 
 <!--        <com.google.android.material.textfield.TextInputLayout-->
