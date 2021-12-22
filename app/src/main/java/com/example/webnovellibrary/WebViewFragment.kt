@@ -26,9 +26,13 @@ class WebViewFragment : Fragment() {
     lateinit var mainToolbar: MaterialToolbar
     lateinit var webViewToolbar: Toolbar
 
+    lateinit var navHostFragment: NavHostFragment
+
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         // Inflate the layout for this fragment
         val view = inflater.inflate(R.layout.fragment_web_view, container, false)
+
+        navHostFragment = (activity as AppCompatActivity).supportFragmentManager.findFragmentById(R.id.nav_host_fragment) as NavHostFragment
 
         val url: String = WebViewFragmentArgs.fromBundle(requireArguments()).url
         val position: Int = WebViewFragmentArgs.fromBundle(requireArguments()).position
@@ -44,11 +48,7 @@ class WebViewFragment : Fragment() {
         (activity as AppCompatActivity).setSupportActionBar(webViewToolbar)
 
         //setup toolbar with nav to enable using UP button
-        val navHostFragment = (activity as AppCompatActivity).supportFragmentManager.findFragmentById(R.id.nav_host_fragment) as NavHostFragment
-        val navController = navHostFragment.navController
-        val builder = AppBarConfiguration.Builder(navController.graph)
-        val appBarConfiguration = builder.build()
-        webViewToolbar.setupWithNavController(navController, appBarConfiguration)
+        setupToolbarWithNav(webViewToolbar)
 
 
         val webView = view.findViewById<WebView>(R.id.webview)
@@ -69,7 +69,7 @@ class WebViewFragment : Fragment() {
                     view.findViewById<EditText>(R.id.et_address_bar).setText(url)
 
                     //Save the novel position and the last url to send back to NovelsFragment
-                    navController.previousBackStackEntry?.savedStateHandle?.set("key", listOf(url, "$position"))
+                    navHostFragment.navController.previousBackStackEntry?.savedStateHandle?.set("key", listOf(url, "$position"))
                 }
             }
         }
@@ -124,11 +124,14 @@ class WebViewFragment : Fragment() {
         (activity as AppCompatActivity).setSupportActionBar(mainToolbar)
 
         //setup toolbar with nav to enable using UP button
-        val navHostFragment = (activity as AppCompatActivity).supportFragmentManager.findFragmentById(R.id.nav_host_fragment) as NavHostFragment
-        val navController = navHostFragment.navController
-        val builder = AppBarConfiguration.Builder(navController.graph)
+        setupToolbarWithNav(mainToolbar)
+    }
+
+    fun setupToolbarWithNav(toolbar: Toolbar) {
+        //setup toolbar with nav to enable using UP button
+        val builder = AppBarConfiguration.Builder(navHostFragment.navController.graph)
         val appBarConfiguration = builder.build()
-        mainToolbar.setupWithNavController(navController, appBarConfiguration)
+        toolbar.setupWithNavController(navHostFragment.navController, appBarConfiguration)
     }
 
 }

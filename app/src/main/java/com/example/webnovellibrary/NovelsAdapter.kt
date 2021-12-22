@@ -3,14 +3,14 @@ package com.example.webnovellibrary
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
 import android.widget.ImageButton
-import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.cardview.widget.CardView
 import androidx.recyclerview.widget.RecyclerView
+import java.util.*
 
-class NovelsAdapter(private val webNovels: List<WebNovel>, val clickListener: NovelsAdapter.OnClickListener) : RecyclerView.Adapter<NovelsAdapter.ViewHolder>() {
+class NovelsAdapter(private val webNovels: List<WebNovel>, val clickListener: OnClickListener) :
+    RecyclerView.Adapter<NovelsAdapter.ViewHolder>(), ItemTouchHelperAdapter {
 
     interface OnClickListener {
         fun onItemClicked(position: Int)
@@ -62,6 +62,12 @@ class NovelsAdapter(private val webNovels: List<WebNovel>, val clickListener: No
 
     override fun getItemCount(): Int {
         return webNovels.size
+    }
+
+    override fun onItemMove(fromPosition: Int, toPosition: Int): Boolean {
+        Collections.swap(webNovels, fromPosition, toPosition)
+        notifyItemMoved(fromPosition, toPosition)
+        return true
     }
 
 }

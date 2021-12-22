@@ -24,8 +24,11 @@ import com.google.gson.reflect.TypeToken
 import android.content.Context.MODE_PRIVATE
 import android.preference.PreferenceManager
 import android.widget.LinearLayout
+import androidx.recyclerview.widget.ItemTouchHelper
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import java.lang.reflect.Type
+import java.util.*
+import kotlin.collections.ArrayList
 
 
 class LibraryFragment : Fragment() {
@@ -70,6 +73,10 @@ class LibraryFragment : Fragment() {
         folderAdapter = FolderAdapter(folders, onClickListener, onLongClickListener)
         rclView.adapter = folderAdapter
         rclView.layoutManager = LinearLayoutManager(context)
+
+        //setup RecyclerView for switching items
+        val itemTouchHelper = ItemTouchHelper( ReorderHelperCallback(folderAdapter) )
+        itemTouchHelper.attachToRecyclerView(rclView)
 
         return view
     }

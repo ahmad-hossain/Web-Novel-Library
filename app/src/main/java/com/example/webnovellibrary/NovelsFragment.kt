@@ -1,26 +1,18 @@
 package com.example.webnovellibrary
 
-import android.R.attr.bottom
 import android.R.attr.label
 import android.app.AlertDialog
-import android.app.PendingIntent
 import android.content.*
-import android.graphics.Color
-import android.net.Uri
 import android.os.Bundle
 import android.util.Log
 import android.view.*
 import android.widget.LinearLayout
 import android.widget.Toast
-import androidx.appcompat.app.AppCompatActivity
-import androidx.appcompat.content.res.AppCompatResources
-import androidx.browser.customtabs.CustomTabsIntent
 import androidx.core.content.ContextCompat.getSystemService
-import androidx.core.graphics.drawable.DrawableCompat
-import androidx.core.graphics.drawable.toBitmap
 import androidx.fragment.app.Fragment
 import androidx.navigation.findNavController
 import androidx.navigation.fragment.navArgs
+import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.bottomsheet.BottomSheetDialog
@@ -88,6 +80,10 @@ class NovelsFragment : Fragment() {
         novelsAdapter = NovelsAdapter(webNovelsList, onClickListener)
         rclView.adapter = novelsAdapter
         rclView.layoutManager = LinearLayoutManager(context)
+
+        //setup RecyclerView for switching items
+        val itemTouchHelper = ItemTouchHelper( ReorderHelperCallback(novelsAdapter) )
+        itemTouchHelper.attachToRecyclerView(rclView)
 
         return view
     }

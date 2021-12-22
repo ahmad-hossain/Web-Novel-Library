@@ -7,8 +7,10 @@ import android.widget.ImageButton
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.card.MaterialCardView
+import java.util.*
 
-class FolderAdapter(private val folders: MutableList<Folder>, val clickListener: OnClickListener, val longClickListener: OnLongClickListener) : RecyclerView.Adapter<FolderAdapter.ViewHolder>() {
+class FolderAdapter(private val folders: MutableList<Folder>, val clickListener: OnClickListener, val longClickListener: OnLongClickListener) :
+    RecyclerView.Adapter<FolderAdapter.ViewHolder>(), ItemTouchHelperAdapter {
 
     interface OnClickListener {
         fun onItemClicked(position: Int)
@@ -56,6 +58,12 @@ class FolderAdapter(private val folders: MutableList<Folder>, val clickListener:
 
     override fun getItemCount(): Int {
         return folders.size
+    }
+
+    override fun onItemMove(fromPosition: Int, toPosition: Int): Boolean {
+        Collections.swap(folders, fromPosition, toPosition)
+        notifyItemMoved(fromPosition, toPosition)
+        return true
     }
 
 }
