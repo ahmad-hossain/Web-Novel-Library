@@ -11,11 +11,6 @@
     app:strokeWidth="0.5dp"
     android:id="@+id/card_view">
 
-<!--        <View-->
-<!--            android:background="#ffffff"-->
-<!--            android:layout_width = "match_parent"-->
-<!--            android:layout_height="1dp"/>-->
-
         <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

@@ -122,6 +122,13 @@ class WebViewFragment : Fragment() {
         //switch back to main toolbar by making it visible again
         mainToolbar.visibility = View.VISIBLE
         (activity as AppCompatActivity).setSupportActionBar(mainToolbar)
+
+        //setup toolbar with nav to enable using UP button
+        val navHostFragment = (activity as AppCompatActivity).supportFragmentManager.findFragmentById(R.id.nav_host_fragment) as NavHostFragment
+        val navController = navHostFragment.navController
+        val builder = AppBarConfiguration.Builder(navController.graph)
+        val appBarConfiguration = builder.build()
+        mainToolbar.setupWithNavController(navController, appBarConfiguration)
     }
 
 }
