@@ -3,15 +3,16 @@ package com.example.webnovellibrary
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.LinearLayout
+import android.widget.ImageButton
 import android.widget.TextView
-import androidx.cardview.widget.CardView
 import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.card.MaterialCardView
 
 class FolderAdapter(private val folders: MutableList<Folder>, val clickListener: OnClickListener, val longClickListener: OnLongClickListener) : RecyclerView.Adapter<FolderAdapter.ViewHolder>() {
 
     interface OnClickListener {
         fun onItemClicked(position: Int)
+        fun onMoreClicked(position: Int)
     }
     interface OnLongClickListener {
         fun onItemLongClicked(position: Int)
@@ -19,16 +20,21 @@ class FolderAdapter(private val folders: MutableList<Folder>, val clickListener:
 
     inner class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val folderName: TextView
-        val linearLayout: LinearLayout
+        val cardView: MaterialCardView
+        val moreButton: ImageButton
 
         init {
             folderName = itemView.findViewById(R.id.tv_folder_name)
-            linearLayout = itemView.findViewById(R.id.linear_layout)
+            cardView = itemView.findViewById(R.id.card_view)
+            moreButton = itemView.findViewById(R.id.bt_more)
 
-            linearLayout.setOnClickListener {
+            moreButton.setOnClickListener {
+                clickListener.onMoreClicked(adapterPosition)
+            }
+            cardView.setOnClickListener {
                 clickListener.onItemClicked(adapterPosition)
             }
-            linearLayout.setOnLongClickListener {
+            cardView.setOnLongClickListener {
                 longClickListener.onItemLongClicked(adapterPosition)
                 true
             }

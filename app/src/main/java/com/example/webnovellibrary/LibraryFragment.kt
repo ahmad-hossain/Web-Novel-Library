@@ -53,11 +53,15 @@ class LibraryFragment : Fragment() {
                     .actionLibraryFragmentToNovelsFragment(folders[position], position)
                 view.findNavController().navigate(action)
             }
+
+            override fun onMoreClicked(position: Int) {
+                //show bottom sheet dialog for editing or deleting folder
+                showBottomSheetDialog(position)
+            }
         }
         val onLongClickListener = object: FolderAdapter.OnLongClickListener {
             override fun onItemLongClicked(position: Int) {
-                //show bottom sheet dialog for editing or deleting folder
-                showBottomSheetDialog(position)
+                //TODO reorder folders
             }
 
         }
@@ -123,7 +127,6 @@ class LibraryFragment : Fragment() {
 
     override fun onStop() {
         super.onStop()
-        //todo save this to file
 
         saveData()
 

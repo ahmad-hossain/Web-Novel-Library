@@ -1,23 +1,57 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
+<com.google.android.material.card.MaterialCardView
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginVertical="5dp"
-    android:orientation="horizontal"
-    android:id="@+id/linear_layout">
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    app:cardCornerRadius="3dp"
+    android:layout_marginHorizontal="2dp"
+    android:layout_marginVertical="2dp"
+    app:strokeColor="@color/grey"
+    app:strokeWidth="0.5dp"
+    android:id="@+id/card_view">
 
-        <ImageView
-            android:layout_width="wrap_content"
+<!--        <View-->
+<!--            android:background="#ffffff"-->
+<!--            android:layout_width = "match_parent"-->
+<!--            android:layout_height="1dp"/>-->
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_gravity="center_vertical"
-            android:layout_marginEnd="20dp"
-            android:src="@drawable/ic_baseline_folder_24" />
+            android:padding="5dp"
+            android:id="@+id/constraint_layout">
 
-        <TextView
-            android:id="@+id/tv_folder_name"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textSize="30sp" />
+                <ImageView
+                    android:id="@+id/im_folder"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    app:layout_constraintTop_toTopOf="@id/constraint_layout"
+                    app:layout_constraintBottom_toBottomOf="@id/constraint_layout"
+                    app:layout_constraintStart_toStartOf="@id/constraint_layout"
+                    android:src="@drawable/ic_baseline_folder_24" />
 
-</LinearLayout>
+                <TextView
+                    android:id="@+id/tv_folder_name"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="20dp"
+                    app:layout_constraintStart_toEndOf="@id/im_folder"
+                    app:layout_constraintTop_toTopOf="@id/constraint_layout"
+                    app:layout_constraintBottom_toBottomOf="@id/constraint_layout"
+                    android:textSize="30sp" />
+
+                <ImageButton
+                    android:id="@+id/bt_more"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:background="?android:selectableItemBackgroundBorderless"
+                    android:padding="5dp"
+                    android:src="@drawable/ic_baseline_more_vert_24"
+                    app:layout_constraintTop_toTopOf="@id/constraint_layout"
+                    app:layout_constraintBottom_toBottomOf="@id/constraint_layout"
+                    app:layout_constraintEnd_toEndOf="@id/constraint_layout"/>
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+
+</com.google.android.material.card.MaterialCardView>
