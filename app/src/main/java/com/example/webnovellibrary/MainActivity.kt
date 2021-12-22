@@ -6,6 +6,7 @@ import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.setupWithNavController
 import com.google.android.material.appbar.MaterialToolbar
+import com.google.android.material.bottomnavigation.BottomNavigationView
 
 class MainActivity : AppCompatActivity() {
 
@@ -24,6 +25,10 @@ class MainActivity : AppCompatActivity() {
         val builder = AppBarConfiguration.Builder(navController.graph)
         val appBarConfiguration = builder.build()
         toolbar.setupWithNavController(navController, appBarConfiguration)
+
+        //enable bottom nav. buttons to move between fragments
+        val bottomNavView = findViewById<BottomNavigationView>(R.id.bottom_nav)
+        bottomNavView.setupWithNavController(navController)
     }
 
 }

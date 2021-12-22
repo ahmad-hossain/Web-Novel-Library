@@ -17,6 +17,7 @@ import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.setupWithNavController
 import com.google.android.material.appbar.MaterialToolbar
+import com.google.android.material.bottomnavigation.BottomNavigationView
 
 
 class WebViewFragment : Fragment() {
@@ -25,6 +26,8 @@ class WebViewFragment : Fragment() {
 
     lateinit var mainToolbar: MaterialToolbar
     lateinit var webViewToolbar: Toolbar
+
+    lateinit var bottomNav: BottomNavigationView
 
     lateinit var navHostFragment: NavHostFragment
 
@@ -39,9 +42,7 @@ class WebViewFragment : Fragment() {
 
 //        setHasOptionsMenu(true)
 
-        //hide the main toolbar
-        mainToolbar = (activity as AppCompatActivity).findViewById(R.id.toolbar)
-        mainToolbar.visibility = View.GONE
+        setToolbarAndNavView(View.GONE)
 
         //set custom toolbar from xml
         webViewToolbar = view.findViewById(R.id.webview_toolbar)
@@ -120,7 +121,7 @@ class WebViewFragment : Fragment() {
         super.onDestroyView()
 
         //switch back to main toolbar by making it visible again
-        mainToolbar.visibility = View.VISIBLE
+        setToolbarAndNavView(View.VISIBLE)
         (activity as AppCompatActivity).setSupportActionBar(mainToolbar)
 
         //setup toolbar with nav to enable using UP button
@@ -132,6 +133,16 @@ class WebViewFragment : Fragment() {
         val builder = AppBarConfiguration.Builder(navHostFragment.navController.graph)
         val appBarConfiguration = builder.build()
         toolbar.setupWithNavController(navHostFragment.navController, appBarConfiguration)
+    }
+
+    fun setToolbarAndNavView(visibility: Int) {
+        //hide the main toolbar
+        mainToolbar = (activity as AppCompatActivity).findViewById(R.id.toolbar)
+        mainToolbar.visibility = visibility
+
+        //hide bottom nav.
+        bottomNav = (activity as AppCompatActivity).findViewById(R.id.bottom_nav)
+        bottomNav.visibility = visibility
     }
 
 }
