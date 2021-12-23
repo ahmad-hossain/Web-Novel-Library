@@ -17,29 +17,15 @@
         <EditText
             android:id="@+id/et_address_bar"
             android:layout_width="250dp"
-            android:layout_height="match_parent"
+            android:layout_height="40dp"
+            android:padding="7dp"
             android:layout_gravity="left"
             android:singleLine="true"
             android:selectAllOnFocus="true"
-            android:textColor="@color/black" />
-
-<!--        <com.google.android.material.textfield.TextInputLayout-->
-<!--            android:id="@+id/outlinedTextField"-->
-<!--            android:layout_width="250dp"-->
-<!--            android:layout_height="wrap_content"-->
-<!--            android:layout_gravity="left"-->
-<!--            app:boxStrokeColor="@color/black"-->
-<!--            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">-->
-
-<!--            <com.google.android.material.textfield.TextInputEditText-->
-<!--                android:id="@+id/et_address_bar"-->
-<!--                android:textColor="@color/black"-->
-<!--                android:layout_width="match_parent"-->
-<!--                android:layout_height="match_parent"-->
-<!--                android:singleLine="true"-->
-<!--                android:inputType="text" />-->
-
-<!--        </com.google.android.material.textfield.TextInputLayout>-->
+            android:background="@drawable/shape_rounded_edittext"
+            android:textColor="@color/black"
+            android:textColorHint="@color/grey"
+            android:hint="Search or enter address" />
     </androidx.appcompat.widget.Toolbar>
 
     <WebView
