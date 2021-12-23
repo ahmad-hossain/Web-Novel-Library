@@ -2,11 +2,13 @@ package com.example.webnovellibrary
 
 import android.app.AlertDialog
 import android.content.*
+import android.hardware.input.InputManager
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
 import android.util.Log
 import android.view.*
+import android.view.inputmethod.InputMethodManager
 import android.widget.EditText
 import android.widget.LinearLayout
 import android.widget.Toast
@@ -20,6 +22,10 @@ import com.google.android.material.textfield.TextInputEditText
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import java.lang.reflect.Type
+import androidx.core.content.ContextCompat.getSystemService
+
+
+
 
 class SearchFragment : Fragment() {
 
@@ -36,6 +42,9 @@ class SearchFragment : Fragment() {
         val view = inflater.inflate(R.layout.fragment_search, container, false)
 
         val searchEditText = view.findViewById<EditText>(R.id.et_search)
+
+        //focus on and open keyboard for EditText as soon as Fragment is opened
+        focusEditText(searchEditText)
         searchEditText.addTextChangedListener(object : TextWatcher {
 
             override fun onTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {
@@ -68,7 +77,7 @@ class SearchFragment : Fragment() {
 
                 val clipboard: ClipboardManager? =
                     context?.let {
-                        ContextCompat.getSystemService(
+                        getSystemService(
                             it,
                             ClipboardManager::class.java
                         )
@@ -80,9 +89,6 @@ class SearchFragment : Fragment() {
             }
 
             override fun onMoreClicked(position: Int) {
-                Log.d(TAG, "onMoreClicked: clicked more for index $position")
-                NovelsFragment().showBottomSheetDialog(position)
-//                    showBottomSheetDialog(position)
             }
         }
 
@@ -143,5 +149,23 @@ class SearchFragment : Fragment() {
         return folders
     }
 
+    private fun focusEditText(et: EditText) {
+        et.requestFocus()
+        val imm = context?.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager?
+        imm?.toggleSoftInput(InputMethodManager.SHOW_FORCED, InputMethodManager.HIDE_IMPLICIT_ONLY)
+    }
+
+    private fun closeKeyboard() {
+        activity?.currentFocus?.let { view ->
+            val imm = context?.getSystemService(Context.INPUT_METHOD_SERVICE) as? InputMethodManager
+            imm?.hideSoftInputFromWindow(view.windowToken, 0)
+        }
+    }
+
+    override fun onStop() {
+        super.onStop()
+
+        closeKeyboard()
+    }
 }
 

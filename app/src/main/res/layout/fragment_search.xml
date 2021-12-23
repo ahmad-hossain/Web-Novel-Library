@@ -15,12 +15,28 @@
         android:textStyle="bold"
         android:text="Search All Novels" />
 
-    <EditText
-        android:id="@+id/et_search"
+    <com.google.android.material.textfield.TextInputLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:drawableLeft="@drawable/ic_baseline_search_24"
-        android:hint="Search" />
+        android:layout_height="45dp"
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+        app:hintEnabled="false"
+        app:startIconDrawable="@drawable/ic_baseline_search_24">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/et_search"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="0dp"
+            android:singleLine="true"
+            android:hint="Search" />
+    </com.google.android.material.textfield.TextInputLayout>
+
+<!--    <EditText-->
+<!--        android:id="@+id/et_search"-->
+<!--        android:layout_width="match_parent"-->
+<!--        android:layout_height="wrap_content"-->
+<!--        android:drawableLeft="@drawable/ic_baseline_search_24"-->
+<!--        android:hint="Search" />-->
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recycler_view_search"
