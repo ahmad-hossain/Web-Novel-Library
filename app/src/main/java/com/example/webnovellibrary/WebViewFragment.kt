@@ -1,6 +1,7 @@
 package com.example.webnovellibrary
 
 import android.content.Context
+import android.content.SharedPreferences
 import android.os.Bundle
 import android.util.Log
 import android.util.Patterns
@@ -18,6 +19,10 @@ import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.setupWithNavController
 import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.bottomnavigation.BottomNavigationView
+import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
+import java.lang.reflect.Type
+import kotlin.properties.Delegates
 
 
 class WebViewFragment : Fragment() {
@@ -31,6 +36,11 @@ class WebViewFragment : Fragment() {
 
     lateinit var navHostFragment: NavHostFragment
 
+    var novelPosition by Delegates.notNull<Int>()
+    var folderPosition by Delegates.notNull<Int>()
+
+    lateinit var lastVisitedUrl: String
+
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         // Inflate the layout for this fragment
         val view = inflater.inflate(R.layout.fragment_web_view, container, false)
@@ -38,7 +48,8 @@ class WebViewFragment : Fragment() {
         navHostFragment = (activity as AppCompatActivity).supportFragmentManager.findFragmentById(R.id.nav_host_fragment) as NavHostFragment
 
         val url: String = WebViewFragmentArgs.fromBundle(requireArguments()).url
-        val position: Int = WebViewFragmentArgs.fromBundle(requireArguments()).position
+        novelPosition = WebViewFragmentArgs.fromBundle(requireArguments()).novelPosition
+        folderPosition = WebViewFragmentArgs.fromBundle(requireArguments()).folderPosition
 
 //        setHasOptionsMenu(true)
 
@@ -69,8 +80,9 @@ class WebViewFragment : Fragment() {
                     //Update address bar
                     view.findViewById<EditText>(R.id.et_address_bar).setText(url)
 
-                    //Save the novel position and the last url to send back to NovelsFragment
-                    navHostFragment.navController.previousBackStackEntry?.savedStateHandle?.set("key", listOf(url, "$position"))
+                    if (url != null) {
+                        lastVisitedUrl = url
+                    }
                 }
             }
         }
@@ -145,4 +157,56 @@ class WebViewFragment : Fragment() {
         bottomNav.visibility = visibility
     }
 
+    override fun onStop() {
+        super.onStop()
+
+        overwriteSave()
+    }
+
+    fun overwriteSave() {
+        val folders = loadData()
+
+        //update the url for the novel
+        folders[folderPosition].webNovels[novelPosition].url = lastVisitedUrl.toString()
+
+        //save the updated data
+        saveData(folders)
+    }
+
+    fun loadData(): MutableList<Folder> {
+
+        val sharedPreferences: SharedPreferences =
+            activity!!.getSharedPreferences("shared preferences", Context.MODE_PRIVATE)
+
+        val gson = Gson()
+
+        val emptyList = Gson().toJson(ArrayList<Folder>())
+        val json = sharedPreferences.getString("foldersList", emptyList)
+
+        val type: Type = object : TypeToken<ArrayList<Folder?>?>() {}.type
+
+        var oldFolders: MutableList<Folder> = gson.fromJson(json, type)
+
+        if (oldFolders == null) {
+
+            oldFolders = mutableListOf<Folder>()
+        }
+
+        return oldFolders
+    }
+
+    fun saveData(folders: MutableList<Folder>) {
+        val sharedPreferences: SharedPreferences =
+            activity!!.getSharedPreferences("shared preferences", Context.MODE_PRIVATE)
+
+        val editor = sharedPreferences.edit()
+
+        val gson = Gson()
+
+        val json: String = gson.toJson(folders)
+
+        editor.putString("foldersList", json)
+
+        editor.apply()
+    }
 }

@@ -30,12 +30,15 @@ class NovelsFragment : Fragment() {
     lateinit var webNovelsList: MutableList<WebNovel>
     lateinit var novelsAdapter: NovelsAdapter
 
+    lateinit var folder: Folder
+
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val view = inflater.inflate(R.layout.fragment_novels, container, false)
 
         setHasOptionsMenu(true)
 
-        val folder = args.folder
+        folder = loadData()[args.position]
+//        val folder = args.folder
 
         //set the toolbar title to the folder name
         (activity as MainActivity).supportActionBar?.title = folder.name
@@ -54,7 +57,7 @@ class NovelsFragment : Fragment() {
                 Log.d(TAG, "onItemClicked: clicked item $position")
 
                 val action = NovelsFragmentDirections.
-                    actionNovelsFragmentToWebViewFragment(url = webNovelsList[position].url, position = position)
+                    actionNovelsFragmentToWebViewFragment(url = webNovelsList[position].url, novelPosition = position, folderPosition = args.position)
                 view.findNavController().navigate(action)
 
             }
@@ -86,18 +89,6 @@ class NovelsFragment : Fragment() {
         itemTouchHelper.attachToRecyclerView(rclView)
 
         return view
-    }
-
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        val navController = view.findNavController()
-        // Any type that can be put in a Bundle is supported
-        navController.currentBackStackEntry?.savedStateHandle?.getLiveData<List<String>>("key")?.observe(
-            viewLifecycleOwner) { result ->
-            // Update the novel's URL
-            val updatedUrl = result [0]
-            val pos = result[1]
-            webNovelsList[pos.toInt()].url = updatedUrl
-        }
     }
 
     //adds items in menu resource file to the toolbar

@@ -38,8 +38,12 @@
             android:name="url"
             app:argType="string" />
         <argument
-            android:name="position"
+            android:name="folderPosition"
             app:argType="integer" />
+        <argument
+            android:name="novelPosition"
+            app:argType="integer" />
+
     </fragment>
     <fragment
         android:id="@+id/searchFragment"

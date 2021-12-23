@@ -36,6 +36,7 @@ class SearchFragment : Fragment() {
     private lateinit var onClickListener: NovelsAdapter.OnClickListener
 
     private var filteredList = mutableListOf<WebNovel>()
+    private var filteredListIndices = mutableListOf<MutableList<Int>>()    //holds folder and novel indices for each item in filteredList
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         // Inflate the layout for this fragment
@@ -64,12 +65,10 @@ class SearchFragment : Fragment() {
         //copied from NovelsAdapter
         onClickListener = object: NovelsAdapter.OnClickListener {
             override fun onItemClicked(position: Int) {
-                Log.d(TAG, "onItemClicked: clicked item $position")
-
-                val action = NovelsFragmentDirections.
-                actionNovelsFragmentToWebViewFragment(url = filteredList[position].url, position = position)
-                view?.findNavController()?.navigate(action)
-
+                //send url, folder position, and novel position to WebViewFragment so it can save on its own
+                val action = SearchFragmentDirections
+                    .actionSearchFragmentToWebViewFragment(url = filteredList[position].url, folderPosition = filteredListIndices[position][0], novelPosition = filteredListIndices[position][1])
+                view.findNavController().navigate(action)
             }
 
             override fun onCopyClicked(position: Int) {
@@ -107,24 +106,30 @@ class SearchFragment : Fragment() {
     fun filter(text: String) {
         //clear data from previous search
         filteredList.clear()
+        filteredListIndices.clear()
 
+        val folders = loadData()
 
-        for (folder in loadData()) {
-            for (novel in folder.webNovels) {
+        for (folderIndex in folders.indices) {
+            val folder = folders[folderIndex]
+
+            for (novelIndex in folder.webNovels.indices) {
+                val novel = folder.webNovels[novelIndex]
+
                 //if search query is found in a novel's title or URL
                 if (novel.title.lowercase().contains(text.lowercase()) || novel.url.lowercase().contains(text.lowercase())) {
                     filteredList.add(novel)
+                    filteredListIndices.add(mutableListOf(folderIndex, novelIndex))
                 }
             }
         }
 
         if (filteredList.isEmpty()) {
             Toast.makeText(context, "No Data Found..", Toast.LENGTH_SHORT).show()
-        } else {
-            //make adapter show the filtered list
-            adapter.filterList(filteredList)
         }
 
+        //make adapter show the filtered list
+        adapter.filterList(filteredList)
     }
 
     fun loadData(): MutableList<Folder> {
