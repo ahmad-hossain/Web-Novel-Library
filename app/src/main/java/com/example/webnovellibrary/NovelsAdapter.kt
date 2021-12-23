@@ -1,5 +1,6 @@
 package com.example.webnovellibrary
 
+import android.text.Layout
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -9,7 +10,7 @@ import androidx.cardview.widget.CardView
 import androidx.recyclerview.widget.RecyclerView
 import java.util.*
 
-class NovelsAdapter(private val webNovels: List<WebNovel>, val clickListener: OnClickListener) :
+class NovelsAdapter(private var webNovels: List<WebNovel>, val clickListener: OnClickListener, val cardLayoutType: Int = 0) :
     RecyclerView.Adapter<NovelsAdapter.ViewHolder>(), ItemTouchHelperAdapter {
 
     interface OnClickListener {
@@ -24,15 +25,16 @@ class NovelsAdapter(private val webNovels: List<WebNovel>, val clickListener: On
         val cardView: CardView
 
         val copyButton: ImageButton
-        val moreButton: ImageButton
+        val moreButton: ImageButton?
 
         init {
+
             webNovelName = itemView.findViewById(R.id.tv_webNovel_name)
             webNovelUrl = itemView.findViewById(R.id.tv_webNovel_url)
             cardView = itemView.findViewById(R.id.card_view)
+            moreButton = itemView.findViewById(R.id.bt_more)
 
             copyButton = itemView.findViewById(R.id.bt_copy)
-            moreButton = itemView.findViewById(R.id.bt_more)
 
             cardView.setOnClickListener {
                 clickListener.onItemClicked(adapterPosition)
@@ -40,15 +42,27 @@ class NovelsAdapter(private val webNovels: List<WebNovel>, val clickListener: On
             copyButton.setOnClickListener {
                 clickListener.onCopyClicked(adapterPosition)
             }
-            moreButton.setOnClickListener {
-                clickListener.onMoreClicked(adapterPosition)
+
+            //more button is only needed in cardLayout 0
+            if (cardLayoutType == 0) {
+
+                moreButton.setOnClickListener {
+                    clickListener.onMoreClicked(adapterPosition)
+                }
             }
+
         }
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
-        val view = LayoutInflater.from(parent.context)
-            .inflate(R.layout.novel_item, parent, false)
+        //when cardLayoutType is set to anything but 0, different card layout will be used for search fragment
+        val view = when (cardLayoutType) {
+            0 -> LayoutInflater.from(parent.context)
+                .inflate(R.layout.novel_item, parent, false)
+            else -> LayoutInflater.from(parent.context)
+                .inflate(R.layout.novel_item_search, parent, false)
+        }
+
         return ViewHolder(view)
     }
 
@@ -68,6 +82,13 @@ class NovelsAdapter(private val webNovels: List<WebNovel>, val clickListener: On
         Collections.swap(webNovels, fromPosition, toPosition)
         notifyItemMoved(fromPosition, toPosition)
         return true
+    }
+
+    fun filterList(filteredList: List<WebNovel>) {
+        //set webNovels list to the filtered list of WebNovels
+        webNovels = filteredList
+        //notify adapter of the change
+        notifyDataSetChanged()
     }
 
 }

@@ -2,32 +2,24 @@ package com.example.webnovellibrary
 
 import android.app.AlertDialog
 import android.content.Context.MODE_PRIVATE
-import android.content.DialogInterface
-import android.content.SharedPreferences
 import android.os.Bundle
 import android.util.Log
 import android.view.*
 import android.view.LayoutInflater
-import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.navigation.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.textfield.TextInputEditText
-import android.content.Context.MODE_PRIVATE
 
-import android.R.string.no
-import android.content.Context
+import android.content.*
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 
-import android.content.Context.MODE_PRIVATE
-import android.preference.PreferenceManager
 import android.widget.LinearLayout
 import androidx.recyclerview.widget.ItemTouchHelper
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import java.lang.reflect.Type
-import java.util.*
 import kotlin.collections.ArrayList
 
 
@@ -83,7 +75,6 @@ class LibraryFragment : Fragment() {
 
     //adds items in menu resource file to the toolbar
     override fun onCreateOptionsMenu(menu: Menu, menuInflater: MenuInflater) {
-//        menu.clear()
         menuInflater.inflate(R.menu.menu_toolbar_library, menu)
         return super.onCreateOptionsMenu(menu, menuInflater)
     }
@@ -245,5 +236,4 @@ class LibraryFragment : Fragment() {
 
         builder.show()
     }
-
 }
