@@ -1,5 +1,5 @@
 # Web-Novel-Library
-This app is meant to help people keep track of all the web novels/light novels/manga they read online by allowing the use of folders to organize novels. Novels can be created in folders and can be opened in the browser instantly. Progress will be saved when clicking the UP button to return to the app.
+This app is meant to help people keep track of all the web novels/light novels/manga they read online by allowing the use of folders to organize novels. Novels can be created in folders and can be opened in the browser instantly. Progress is automatically saved by updating the novel's url to the last visited url.
 
 ![Gif Walkthrough](https://thumbs.gfycat.com/ImpressionableAshamedJunco-size_restricted.gif)
 

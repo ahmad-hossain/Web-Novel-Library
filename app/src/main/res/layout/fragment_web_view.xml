@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
+<androidx.coordinatorlayout.widget.CoordinatorLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     xmlns:app="http://schemas.android.com/apk/res-auto"
@@ -8,30 +8,56 @@
     android:orientation="vertical"
     tools:context=".WebViewFragment">
 
-    <androidx.appcompat.widget.Toolbar
-        android:id="@+id/webview_toolbar"
+    <com.google.android.material.appbar.AppBarLayout
         android:layout_width="match_parent"
-        android:layout_height="?attr/actionBarSize"
-        style="@style/Widget.MaterialComponents.Toolbar.Primary">
+        android:layout_height="wrap_content"
+        android:theme="@style/ThemeOverlay.MaterialComponents.Dark.ActionBar">
 
-        <EditText
-            android:id="@+id/et_address_bar"
-            android:layout_width="250dp"
-            android:layout_height="40dp"
-            android:padding="7dp"
-            android:layout_gravity="left"
-            android:singleLine="true"
-            android:selectAllOnFocus="true"
-            android:background="@drawable/shape_rounded_edittext"
-            android:textColor="@color/black"
-            android:textColorHint="@color/grey"
-            android:hint="Search or enter address" />
-    </androidx.appcompat.widget.Toolbar>
+        <com.google.android.material.appbar.CollapsingToolbarLayout
+            android:id="@+id/collapsing_toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            app:layout_scrollFlags="scroll|enterAlways"
+            app:contentScrim="?attr/colorPrimary"> <!-- gives toolbar plain bg color when collapsed -->
 
-    <WebView
-        android:id="@+id/webview"
+            <androidx.appcompat.widget.Toolbar
+                android:id="@+id/webview_toolbar"
+                android:layout_width="match_parent"
+                android:layout_height="?attr/actionBarSize"
+                style="@style/Widget.MaterialComponents.Toolbar.Primary">
+
+                <EditText
+                    android:id="@+id/et_address_bar"
+                    android:layout_width="250dp"
+                    android:layout_height="40dp"
+                    android:padding="7dp"
+                    android:layout_gravity="left"
+                    android:singleLine="true"
+                    android:selectAllOnFocus="true"
+                    android:background="@drawable/shape_rounded_edittext"
+                    android:textColor="@color/black"
+                    android:textColorHint="@color/grey"
+                    android:hint="Search or enter address" />
+            </androidx.appcompat.widget.Toolbar>
+        </com.google.android.material.appbar.CollapsingToolbarLayout>
+
+    </com.google.android.material.appbar.AppBarLayout>
+
+    <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1" />
+        android:layout_height="match_parent"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
-</LinearLayout>
+        <WebView
+            android:id="@+id/webview"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+    </androidx.core.widget.NestedScrollView>
+
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>
+<!--
+nestedScrollingEnabled = false or true in WebView
+fillViewport           = true   in ScrollView
+match_parent height for WebView or wrap_parent
+-->

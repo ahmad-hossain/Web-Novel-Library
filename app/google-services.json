@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "34077770592",
+    "project_id": "web-novel-library",
+    "storage_bucket": "web-novel-library.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:34077770592:android:9a26b7b0a5800ca60fd405",
+        "android_client_info": {
+          "package_name": "com.example.webnovellibrary"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "34077770592-i56fprs9o4oosbdr403dpq2ghdrnuark.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.webnovellibrary",
+            "certificate_hash": "cc1f979a1160a11d853df28a7567fb508c77e085"
+          }
+        },
+        {
+          "client_id": "34077770592-gjcf142prcjsbmmiv97o2ujaofqnsu4i.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCraIwl7oj30luajICttd0SY2n8n-2tb80"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "34077770592-gjcf142prcjsbmmiv97o2ujaofqnsu4i.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
