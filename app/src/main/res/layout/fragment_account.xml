@@ -7,8 +7,6 @@
     android:layout_height="match_parent"
     tools:context=".AccountFragment">
 
-<!--  Displays Signed in as () or displays email   -->
-
     <com.google.android.gms.common.SignInButton
         android:id="@+id/bt_google_sign_in"
         android:layout_width="wrap_content"

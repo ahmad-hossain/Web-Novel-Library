@@ -17,6 +17,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.textfield.TextInputEditText
+import com.google.android.material.textfield.TextInputLayout
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import java.lang.reflect.Type
@@ -65,10 +66,7 @@ class NovelsFragment : Fragment() {
             override fun onCopyClicked(position: Int) {
                 Log.d(TAG, "onCopyClicked: clicked copy for index $position")
 
-                val clipboard: ClipboardManager? =
-                    context?.let { getSystemService(it, ClipboardManager::class.java) }
-                val clip = ClipData.newPlainText(label.toString(), webNovelsList[position].url)
-                clipboard?.setPrimaryClip(clip)
+                copyToClipboard(webNovelsList[position].url)
 
                 Toast.makeText(context, "Copied URL!", Toast.LENGTH_SHORT).show()
             }
@@ -91,6 +89,13 @@ class NovelsFragment : Fragment() {
         return view
     }
 
+    private fun copyToClipboard(text: String) {
+        val clipboard: ClipboardManager? =
+            context?.let { getSystemService(it, ClipboardManager::class.java) }
+        val clip = ClipData.newPlainText(label.toString(), text)
+        clipboard?.setPrimaryClip(clip)
+    }
+
     //adds items in menu resource file to the toolbar
     override fun onCreateOptionsMenu(menu: Menu, menuInflater: MenuInflater) {
         menuInflater.inflate(R.menu.menu_toolbar_novels, menu)
@@ -110,9 +115,15 @@ class NovelsFragment : Fragment() {
                 // Set up the input
                 val webNovelTitle = viewInflated.findViewById(R.id.et_webNovel_name) as TextInputEditText
                 val webNovelUrl = viewInflated.findViewById(R.id.et_webNovel_url) as TextInputEditText
+                val urlTextLayout = viewInflated.findViewById(R.id.tl_url) as TextInputLayout
 
                 // Specify the type of input expected
                 builder.setView(viewInflated)
+
+                //Set click listener for webNovelUrl paste button
+                urlTextLayout.setEndIconOnClickListener {
+                    webNovelUrl.setText(clipboardPaste())
+                }
 
                 builder.setPositiveButton(android.R.string.ok,
                     DialogInterface.OnClickListener { dialog, which ->
@@ -236,12 +247,18 @@ class NovelsFragment : Fragment() {
         // Set up the input
         val webNovelTitle = viewInflated.findViewById(R.id.et_webNovel_name) as TextInputEditText
         val webNovelUrl = viewInflated.findViewById(R.id.et_webNovel_url) as TextInputEditText
+        val urlTextLayout = viewInflated.findViewById(R.id.tl_url) as TextInputLayout
 
         webNovelTitle.setText(webNovelsList[position].title)
         webNovelUrl.setText(webNovelsList[position].url)
 
         // Specify the type of input expected
         builder.setView(viewInflated)
+
+        //Set click listener for webNovelUrl paste button
+        urlTextLayout.setEndIconOnClickListener {
+            webNovelUrl.setText(clipboardPaste())
+        }
 
         builder.setPositiveButton(android.R.string.ok,
             DialogInterface.OnClickListener { dialog, which ->
@@ -260,6 +277,12 @@ class NovelsFragment : Fragment() {
             DialogInterface.OnClickListener { dialog, which -> dialog.cancel() })
 
         builder.show()
+    }
+
+    private fun clipboardPaste(): String {
+        val clipboard = (context?.getSystemService(Context.CLIPBOARD_SERVICE)) as? ClipboardManager
+        val textToPaste = clipboard?.primaryClip?.getItemAt(0)?.text
+        return textToPaste.toString()
     }
 
     fun deleteNovel(position: Int) {
