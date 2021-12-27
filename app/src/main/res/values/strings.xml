@@ -11,4 +11,5 @@
     <string name="backup_enabled">Automatic cloud backup is enabled for:</string>
     <string name="hint_web_novel_url">Web Novel URL</string>
     <string name="hint_web_novel_name">Web Novel Name</string>
+    <string name="move_novel">Move Novel</string>
 </resources>

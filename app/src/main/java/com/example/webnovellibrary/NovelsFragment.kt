@@ -221,6 +221,7 @@ class NovelsFragment : Fragment() {
 
         move?.setOnClickListener { 
             Toast.makeText(context, "clicked Move. Not implemented.", Toast.LENGTH_SHORT).show()
+            showFoldersBottomSheetDialog(position)
         }
         edit?.setOnClickListener {
             Log.d(TAG, "showBottomSheetDialog: edit clicked at index $position")
@@ -289,4 +290,32 @@ class NovelsFragment : Fragment() {
         webNovelsList.removeAt(position)
         novelsAdapter.notifyItemRemoved(position)
     }
+
+    fun showFoldersBottomSheetDialog(position: Int) {
+        val bottomSheetDialog = context?.let { BottomSheetDialog(it) }
+        bottomSheetDialog?.setContentView(R.layout.bottom_sheet_dialog_folder_list)
+
+        //todo get list of all folders
+        val sampleFolderData = mutableListOf("Favorites", "Completed", "Reading", "Test", "Hello", "Hello", "Hello", "Hello", "Hello", "Hello")
+
+        //todo setup onClickListener for folder item.
+        val onClickListener = object: MoveNovelAdapter.OnClickListener {
+            override fun onItemClicked(position: Int) {
+                //TODO
+                Log.d(TAG, "Clicked item $position")
+            }
+        }
+            //todo setup recyclerview
+
+        val foldersAdapter = MoveNovelAdapter(sampleFolderData, onClickListener)
+        val recyclerView = bottomSheetDialog?.findViewById<RecyclerView>(R.id.rv_folders)
+
+
+        recyclerView?.adapter = foldersAdapter
+        recyclerView?.layoutManager = LinearLayoutManager(context)
+
+
+        bottomSheetDialog?.show()
+    }
+
 }
