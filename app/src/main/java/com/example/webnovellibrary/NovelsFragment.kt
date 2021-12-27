@@ -32,13 +32,15 @@ class NovelsFragment : Fragment() {
     lateinit var novelsAdapter: NovelsAdapter
 
     lateinit var folder: Folder
+    lateinit var folderList: MutableList<Folder>
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val view = inflater.inflate(R.layout.fragment_novels, container, false)
 
         setHasOptionsMenu(true)
 
-        folder = loadData()[args.position]
+        folderList = loadData()
+        folder = folderList[args.position]
 //        val folder = args.folder
 
         //set the toolbar title to the folder name
@@ -164,7 +166,7 @@ class NovelsFragment : Fragment() {
         Log.d(TAG, "onStop: new novels num: ${args.folder.webNovels.size}")
 
         //load the old folders data
-        val oldFolders = loadData()
+        val oldFolders = folderList
 
         //update the current folder
         oldFolders[args.position] = args.folder
@@ -219,9 +221,10 @@ class NovelsFragment : Fragment() {
         val edit = bottomSheetDialog?.findViewById<LinearLayout>(R.id.ll_edit)
         val delete = bottomSheetDialog?.findViewById<LinearLayout>(R.id.ll_delete)
 
-        move?.setOnClickListener { 
-            Toast.makeText(context, "clicked Move. Not implemented.", Toast.LENGTH_SHORT).show()
+        move?.setOnClickListener {
+            Log.d(TAG, "showBottomSheetDialog: move clicked at $position")
             showFoldersBottomSheetDialog(position)
+            bottomSheetDialog.dismiss()
         }
         edit?.setOnClickListener {
             Log.d(TAG, "showBottomSheetDialog: edit clicked at index $position")
@@ -291,31 +294,58 @@ class NovelsFragment : Fragment() {
         novelsAdapter.notifyItemRemoved(position)
     }
 
-    fun showFoldersBottomSheetDialog(position: Int) {
+    private fun showFoldersBottomSheetDialog(novelPosition: Int) {
         val bottomSheetDialog = context?.let { BottomSheetDialog(it) }
         bottomSheetDialog?.setContentView(R.layout.bottom_sheet_dialog_folder_list)
 
-        //todo get list of all folders
-        val sampleFolderData = mutableListOf("Favorites", "Completed", "Reading", "Test", "Hello", "Hello", "Hello", "Hello", "Hello", "Hello")
+        //get String list of all folder names
+        val folderNames: MutableList<String> = getFolderNames()
 
-        //todo setup onClickListener for folder item.
+        //Setup onClickListener for folder items.
         val onClickListener = object: MoveNovelAdapter.OnClickListener {
             override fun onItemClicked(position: Int) {
-                //TODO
-                Log.d(TAG, "Clicked item $position")
+                //Move novel to desired folder
+                changeNovelFolder(novelPosition, position)
+
+                bottomSheetDialog?.dismiss()
+
+                Toast.makeText(context, "Moved novel to ${folderNames[position]}", Toast.LENGTH_SHORT).show()
             }
         }
-            //todo setup recyclerview
 
-        val foldersAdapter = MoveNovelAdapter(sampleFolderData, onClickListener)
-        val recyclerView = bottomSheetDialog?.findViewById<RecyclerView>(R.id.rv_folders)
-
-
-        recyclerView?.adapter = foldersAdapter
-        recyclerView?.layoutManager = LinearLayoutManager(context)
-
+        //Setup RecyclerView of folder options
+        setupFoldersRecyclerView(folderNames, onClickListener, bottomSheetDialog)
 
         bottomSheetDialog?.show()
     }
 
+    fun changeNovelFolder(novelPosition: Int, toFolderPos: Int) {
+        //if the current folder was not selected
+        if (args.position != toFolderPos) {
+            //append the novel to the Folder user wants to move it to
+            folderList[toFolderPos].webNovels.add(folder.webNovels[novelPosition])
+
+            //delete the novel from the original Folder
+            folder.webNovels.removeAt(novelPosition)
+
+            //notify adapter that item was removed
+            novelsAdapter.notifyItemRemoved(novelPosition)
+        }
+    }
+
+    private fun getFolderNames(): MutableList<String> {
+        val folderNames = mutableListOf<String>()
+
+        folderList.forEach { folderNames.add(it.name) }
+
+        return folderNames
+    }
+
+    private fun setupFoldersRecyclerView(folderNames: MutableList<String>,onClickListener: MoveNovelAdapter.OnClickListener,bottomSheetDialog: BottomSheetDialog?) {
+        val foldersAdapter = MoveNovelAdapter(folderNames, onClickListener)
+        val recyclerView = bottomSheetDialog?.findViewById<RecyclerView>(R.id.rv_folders)
+
+        recyclerView?.adapter = foldersAdapter
+        recyclerView?.layoutManager = LinearLayoutManager(context)
+    }
 }
