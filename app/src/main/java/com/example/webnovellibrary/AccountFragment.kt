@@ -1,6 +1,10 @@
 package com.example.webnovellibrary
 
+import android.app.AlertDialog
+import android.content.Context
+import android.content.DialogInterface
 import android.content.Intent
+import android.content.SharedPreferences
 import android.os.Bundle
 import android.util.Log
 import androidx.fragment.app.Fragment
@@ -22,7 +26,12 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.auth.GoogleAuthProvider
 import com.google.firebase.auth.ktx.auth
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
+import com.google.firebase.database.ValueEventListener
+import com.google.firebase.database.ktx.database
 import com.google.firebase.ktx.Firebase
+import com.google.gson.Gson
 
 class AccountFragment : Fragment() {
 
@@ -33,21 +42,13 @@ class AccountFragment : Fragment() {
 
     private lateinit var auth: FirebaseAuth
 
-//    override fun onStart() {
-//        super.onStart()
-//        // Check if user is signed in (non-null) and update UI accordingly.
-//        val currentUser = auth.currentUser
-////        updateUI(currentUser)
-//
-//        //TODO user is signed in
-//        if (currentUser != null) {
-//
-//        }
-//    }
+    private lateinit var mActivity: AppCompatActivity
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         auth = Firebase.auth
         val user = auth.currentUser
+
+        mActivity = (activity as AppCompatActivity)
 
         createRequest()
 
@@ -57,6 +58,7 @@ class AccountFragment : Fragment() {
         return view
     }
 
+    //update UI based on user sign-in status
     private fun updateUI(
         user: FirebaseUser?,
         inflater: LayoutInflater,
@@ -146,12 +148,13 @@ class AccountFragment : Fragment() {
                     // Sign in success, update UI with the signed-in user's information
                     Log.d(TAG, "signInWithCredential:success")
                     val user = auth.currentUser
-                    Toast.makeText(context, "Signed in", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, "Signed in as ${user?.email}", Toast.LENGTH_SHORT).show()
 
-                    //TODO check if saveData is diff from cloud. If so, ask if should overwrite.
+                    //Checks if local data is diff from firebase data. If so, choose whether to overwrite. Returns to libraryFragment afterwards
+                    if (user != null) {
+                        resolveDBConflicts(user.uid)
+                    }
 
-                    //return to app main screen
-                    returnToLibrary()
                 } else {
                     // If sign in fails, display a message to the user.
                     Log.w(TAG, "signInWithCredential:failure", task.exception)
@@ -164,5 +167,93 @@ class AccountFragment : Fragment() {
         findNavController().popBackStack()
     }
 
+    private fun resolveDBConflicts(userID: String) {
+        //get reference to the user's path in firebase db
+        val databaseRef = Firebase.database.reference.child("users").child(userID)
 
+        databaseRef.addValueEventListener(object: ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                //lets code only run once, whereafter moves to else statement
+                if (snapshot.exists()) {
+                    //get the user's json data as String
+                    val databaseJson = snapshot.getValue(String::class.java)
+                    Log.d(TAG, "onDataChange: Found data in db: $databaseJson")
+
+                    //TODO if cloud db exists AND local and cloud are not equal, show alert dialog to choose which db to keep
+                    if (databaseJson != null && databaseJson != loadJsonData()) {
+                        Log.d(TAG, "onDataChange: CONFLICT between local and online")
+                        conflictAlertDialog(databaseJson)
+                    } else {
+                        returnToLibrary()
+                    }
+                } else {
+                    Log.d(TAG, "onDataChange: Ending listener")
+                    //end the listener
+                    databaseRef.removeEventListener(this)
+                }
+
+
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                Log.d(TAG, "onCancelled")
+            }
+
+        })
+    }
+
+    private fun loadJsonData(): String? {
+        val sharedPreferences: SharedPreferences =
+            mActivity.getSharedPreferences("shared preferences", Context.MODE_PRIVATE)
+
+        val emptyList = Gson().toJson(ArrayList<Folder>())
+
+        val json = sharedPreferences.getString("foldersList", emptyList)
+
+        return json
+    }
+
+    fun saveJsonData(json: String) {
+        Log.d(TAG, "saveJsonData: Saving $json")
+        val sharedPreferences: SharedPreferences =
+            mActivity.getSharedPreferences("shared preferences", Context.MODE_PRIVATE)
+
+        val editor = sharedPreferences.edit()
+
+        editor.putString("foldersList", json)
+
+        editor.apply()
+    }
+
+    fun conflictAlertDialog(databaseJson: String) {
+        val builder = AlertDialog.Builder(context)
+        builder.setTitle(getString(R.string.resolve_data_conflicts))
+
+        val viewInflated: View = LayoutInflater.from(context)
+            .inflate(R.layout.popup_data_conflict, view as ViewGroup?, false)
+
+        // Specify the type of input expected
+        builder.setView(viewInflated)
+
+        builder.setPositiveButton(getString(R.string.local),
+            DialogInterface.OnClickListener { dialog, which ->
+                dialog.dismiss()
+
+                //return to library Fragment
+                returnToLibrary()
+            })
+
+        builder.setNegativeButton(getString(R.string.online),
+            DialogInterface.OnClickListener { dialog, which ->
+                dialog.dismiss()
+
+                //save the online database using saveJsonData()
+                saveJsonData(databaseJson)
+
+                //return to library Fragment
+                returnToLibrary()
+            })
+
+        builder.show()
+    }
 }

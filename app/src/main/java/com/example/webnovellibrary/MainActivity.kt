@@ -5,6 +5,7 @@ import android.content.SharedPreferences
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
+import androidx.navigation.NavController
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.setupWithNavController
@@ -21,36 +22,51 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var startingSaveData: String
 
+    private lateinit var toolbar: MaterialToolbar
+    private lateinit var navController: NavController
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
         //set the value of startingSaveData to later check if data was changed in onStop
+        setStartingSaveData()
+
+        toolbar = findViewById(R.id.toolbar)
+        setSupportActionBar(toolbar)
+
+        //setup toolbar with nav to enable using UP button
+        setupToolbarWithNav()
+
+        //enable bottom nav. buttons to move between fragments
+        setupBottomNavWithNav()
+    }
+
+    override fun onStop() {
+        super.onStop()
+
+        saveDataToFirebase()
+    }
+
+    private fun setupBottomNavWithNav() {
+        val bottomNavView = findViewById<BottomNavigationView>(R.id.bottom_nav)
+        bottomNavView.setupWithNavController(navController)
+    }
+
+    private fun setupToolbarWithNav() {
+        val navHostFragment = supportFragmentManager.findFragmentById(R.id.nav_host_fragment) as NavHostFragment
+        navController = navHostFragment.navController
+        val builder = AppBarConfiguration.Builder(navController.graph)
+        val appBarConfiguration = builder.build()
+        toolbar.setupWithNavController(navController, appBarConfiguration)
+    }
+
+    private fun setStartingSaveData() {
         loadJsonData().also {
             if (it != null) {
                 startingSaveData = it
             }
         }
-
-        val toolbar = findViewById<MaterialToolbar>(R.id.toolbar)
-        setSupportActionBar(toolbar)
-
-        //setup toolbar with nav to enable using UP button
-        val navHostFragment = supportFragmentManager.findFragmentById(R.id.nav_host_fragment) as NavHostFragment
-        val navController = navHostFragment.navController
-        val builder = AppBarConfiguration.Builder(navController.graph)
-        val appBarConfiguration = builder.build()
-        toolbar.setupWithNavController(navController, appBarConfiguration)
-
-        //enable bottom nav. buttons to move between fragments
-        val bottomNavView = findViewById<BottomNavigationView>(R.id.bottom_nav)
-        bottomNavView.setupWithNavController(navController)
-    }
-
-    override fun onStop() {
-        super.onStop()
-        
-        saveDataToFirebase()
     }
 
     private fun saveDataToFirebase() {
@@ -69,7 +85,7 @@ class MainActivity : AppCompatActivity() {
             val myRef = database.reference
 
 
-            myRef.child("Users")
+            myRef.child("users")
                 .child(user.uid)
                 .setValue(currentSaveData)
         }
@@ -83,9 +99,6 @@ class MainActivity : AppCompatActivity() {
 
         val json = sharedPreferences.getString("foldersList", emptyList)
 
-        Log.d(TAG, "loadJsonData: $json")
-        
         return json
     }
-
 }

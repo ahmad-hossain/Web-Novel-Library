@@ -33,6 +33,8 @@ class LibraryFragment : Fragment() {
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val view = inflater.inflate(R.layout.fragment_library, container, false)
 
+        loadData()
+
         //set toolbar buttons; required for fragments
         setHasOptionsMenu(true)
 
@@ -130,11 +132,6 @@ class LibraryFragment : Fragment() {
 
         Log.d(TAG, "stopping")
         Log.d(TAG, "there are ${folders.size} folders ")
-    }
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        loadData()
     }
 
     private fun saveData() {

@@ -2,4 +2,8 @@
     <string name="app_name">Web Novel Library</string>
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="data_conflict_choice">Local save data is newer than online data. Choose which data to keep.</string>
+    <string name="online">Online</string>
+    <string name="local">Local</string>
+    <string name="resolve_data_conflicts">Resolve Data Conflicts</string>
 </resources>
