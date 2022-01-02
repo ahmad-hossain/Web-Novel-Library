@@ -87,6 +87,7 @@ class MainActivity : AppCompatActivity() {
 
             myRef.child("users")
                 .child(user.uid)
+                .child("data")
                 .setValue(currentSaveData)
         }
     }

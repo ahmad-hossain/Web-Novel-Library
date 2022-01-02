@@ -169,30 +169,24 @@ class AccountFragment : Fragment() {
 
     private fun resolveDBConflicts(userID: String) {
         //get reference to the user's path in firebase db
-        val databaseRef = Firebase.database.reference.child("users").child(userID)
-
+        val databaseRef = Firebase.database.reference.child("users").child(userID).child("data")
         databaseRef.addValueEventListener(object: ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
-                //lets code only run once, whereafter moves to else statement
-                if (snapshot.exists()) {
-                    //get the user's json data as String
-                    val databaseJson = snapshot.getValue(String::class.java)
-                    Log.d(TAG, "onDataChange: Found data in db: $databaseJson")
+                //get the user's json data as String
+                val databaseJson = snapshot.getValue(String::class.java)
+                Log.d(TAG, "onDataChange: Found data in db: $databaseJson")
 
-                    //TODO if cloud db exists AND local and cloud are not equal, show alert dialog to choose which db to keep
-                    if (databaseJson != null && databaseJson != loadJsonData()) {
-                        Log.d(TAG, "onDataChange: CONFLICT between local and online")
-                        conflictAlertDialog(databaseJson)
-                    } else {
-                        returnToLibrary()
-                    }
+                //if local and cloud are conflicting
+                if (databaseJson != null && databaseJson != loadJsonData()) {
+                    Log.d(TAG, "onDataChange: CONFLICT between local and online")
+                    conflictAlertDialog(databaseJson)
                 } else {
-                    Log.d(TAG, "onDataChange: Ending listener")
-                    //end the listener
-                    databaseRef.removeEventListener(this)
+                    returnToLibrary()
+                    saveDataToFirebase()
                 }
 
-
+                //end the listener
+                databaseRef.removeEventListener(this)
             }
 
             override fun onCancelled(error: DatabaseError) {
@@ -200,6 +194,21 @@ class AccountFragment : Fragment() {
             }
 
         })
+    }
+
+    private fun saveDataToFirebase() {
+        val user = Firebase.auth.currentUser
+        val currentSaveData = loadJsonData()
+
+        if (user != null) {
+            val database = Firebase.database
+            val myRef = database.reference
+
+            myRef.child("users")
+                .child(user.uid)
+                .child("data")
+                .setValue(currentSaveData)
+        }
     }
 
     private fun loadJsonData(): String? {
@@ -253,6 +262,11 @@ class AccountFragment : Fragment() {
                 //return to library Fragment
                 returnToLibrary()
             })
+
+        builder.setOnCancelListener {
+            Log.d(TAG, "Alert Dialog CANCELED")
+            returnToLibrary()
+        }
 
         builder.show()
     }
