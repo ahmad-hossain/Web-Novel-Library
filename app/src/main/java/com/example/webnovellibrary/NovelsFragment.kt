@@ -1,13 +1,17 @@
 package com.example.webnovellibrary
 
 import android.R.attr.label
+import android.app.Activity
 import android.app.AlertDialog
 import android.content.*
 import android.os.Bundle
 import android.util.Log
 import android.view.*
+import android.view.inputmethod.InputMethodManager
+import android.widget.EditText
 import android.widget.LinearLayout
 import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat.getSystemService
 import androidx.fragment.app.Fragment
 import androidx.navigation.findNavController
@@ -16,6 +20,7 @@ import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.bottomsheet.BottomSheetDialog
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.textfield.TextInputEditText
 import com.google.android.material.textfield.TextInputLayout
 import com.google.gson.Gson
@@ -108,8 +113,7 @@ class NovelsFragment : Fragment() {
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
             R.id.add_webNovel -> {
-                val builder = AlertDialog.Builder(context)
-                builder.setTitle("Add Web Novel")
+                val builder = MaterialAlertDialogBuilder((activity as AppCompatActivity), R.style.AlertDialogTheme)
 
                 val viewInflated: View = LayoutInflater.from(context)
                     .inflate(R.layout.popup_web_novel, view as ViewGroup?, false)
@@ -122,6 +126,9 @@ class NovelsFragment : Fragment() {
                 // Specify the type of input expected
                 builder.setView(viewInflated)
 
+                //focus on webNovelTitle EditText when Dialog is opened and open keyboard
+                focusEditText(webNovelTitle)
+
                 //Set click listener for webNovelUrl paste button
                 urlTextLayout.setEndIconOnClickListener {
                     webNovelUrl.setText(clipboardPaste())
@@ -130,6 +137,8 @@ class NovelsFragment : Fragment() {
                 builder.setPositiveButton(android.R.string.ok,
                     DialogInterface.OnClickListener { dialog, which ->
                         dialog.dismiss()
+
+                        closeKeyboard()
 
                         val title = webNovelTitle.text.toString()
                         val url = webNovelUrl.text.toString()
@@ -141,7 +150,12 @@ class NovelsFragment : Fragment() {
                     })
 
                 builder.setNegativeButton(android.R.string.cancel,
-                    DialogInterface.OnClickListener { dialog, which -> dialog.cancel() })
+                    DialogInterface.OnClickListener { dialog, which ->
+                        closeKeyboard()
+                        dialog.cancel()
+                    })
+
+                builder.setOnCancelListener { closeKeyboard() }
 
                 builder.show()
 
@@ -150,6 +164,17 @@ class NovelsFragment : Fragment() {
         }
 
         return false
+    }
+
+    private fun focusEditText(et: EditText) {
+        et.requestFocus()
+        val imm = context?.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager?
+        imm?.toggleSoftInput(InputMethodManager.SHOW_FORCED, InputMethodManager.HIDE_IMPLICIT_ONLY)
+    }
+
+    private fun closeKeyboard() {
+        val imm = context?.getSystemService(Activity.INPUT_METHOD_SERVICE) as InputMethodManager?
+        imm?.toggleSoftInput(InputMethodManager.HIDE_IMPLICIT_ONLY, 0)
     }
 
     fun addNovel(title: String, url: String) {

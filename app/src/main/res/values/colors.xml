@@ -12,4 +12,12 @@
     <color name="eerie_black">#181818</color>
     <color name="cultured">#F8F8F8</color>
     <color name="grey">#808080</color>
+
+    <color name="dark_grey">#121212</color>
+    <color name="grey_light">#383838</color>
+
+    <color name="blue_500">#2196f3</color>
+    <!--    <color name="azure_blue">#007fff</color>-->
+
+    <color name="dark_gunmetal">#232528</color>
 </resources>

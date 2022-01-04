@@ -12,6 +12,6 @@
     <string name="hint_web_novel_url">Web Novel URL</string>
     <string name="hint_web_novel_name">Web Novel Name</string>
     <string name="move_novel">Move Novel</string>
-
-    <string name="banner_ad_unit_id">ca-app-pub-3940256099942544/6300978111</string>
+    <string name="add_web_novel">Add Web Novel</string>
+    <string name="add_folder">Add Folder</string>
 </resources>

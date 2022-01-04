@@ -24,7 +24,7 @@
                 android:id="@+id/webview_toolbar"
                 android:layout_width="match_parent"
                 android:layout_height="?attr/actionBarSize"
-                style="@style/Widget.MaterialComponents.Toolbar.Primary">
+                style="@style/ToolbarTheme">
 
                 <EditText
                     android:id="@+id/et_address_bar"
