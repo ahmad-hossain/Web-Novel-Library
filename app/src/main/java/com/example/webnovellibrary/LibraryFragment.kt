@@ -1,6 +1,5 @@
 package com.example.webnovellibrary
 
-import android.app.AlertDialog
 import android.content.Context.MODE_PRIVATE
 import android.os.Bundle
 import android.util.Log
@@ -26,6 +25,9 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import java.lang.reflect.Type
 import kotlin.collections.ArrayList
 import android.app.Activity
+import android.view.inputmethod.EditorInfo
+import android.widget.TextView
+import androidx.appcompat.app.AlertDialog
 
 
 class LibraryFragment : Fragment() {
@@ -90,49 +92,65 @@ class LibraryFragment : Fragment() {
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
             R.id.add_folder -> {
-                val builder = MaterialAlertDialogBuilder((activity as AppCompatActivity), R.style.AlertDialogTheme)
-
-                val viewInflated: View = LayoutInflater.from(context)
-                    .inflate(R.layout.popup_folder_name, view as ViewGroup?, false)
-
-                // Set up the input
-                val input = viewInflated.findViewById(R.id.input) as TextInputEditText
-
-                // Specify the type of input expected
-                builder.setView(viewInflated)
-
-                //focus on folder-name EditText when Dialog is opened and open keyboard
-                focusEditText(input)
-
-                builder.setPositiveButton(android.R.string.ok,
-                    DialogInterface.OnClickListener { dialog, which ->
-                        dialog.dismiss()
-                        closeKeyboard()
-
-                        val folderName = input.text.toString()
-                        Log.d(TAG, "new folder requested: $folderName")
-
-                        addFolder(folderName)
-
-                    })
-
-                builder.setNegativeButton(android.R.string.cancel,
-                    DialogInterface.OnClickListener { dialog, which ->
-                        dialog.cancel()
-                        closeKeyboard()
-                    })
-
-                //close keyboard when user closes dialog without any action
-                builder.setOnCancelListener { closeKeyboard() }
-
-                builder.show()
-
+                addFolderDialog()
                 return true
             }
         }
 
         return false
     }
+
+    private fun addFolderDialog() {
+        val builder = MaterialAlertDialogBuilder((activity as AppCompatActivity), R.style.AlertDialogTheme)
+
+        val viewInflated: View = LayoutInflater.from(context)
+            .inflate(R.layout.popup_folder_name, view as ViewGroup?, false)
+
+        //set the title
+        viewInflated.findViewById<TextView>(R.id.tv_title).text = getString(R.string.add_folder)
+
+        // Set up the input
+        val input = viewInflated.findViewById(R.id.input) as TextInputEditText
+
+        // Specify the type of input expected
+        builder.setView(viewInflated)
+
+        //focus on folder-name EditText when Dialog is opened and open keyboard
+        focusEditText(input)
+
+        builder.setPositiveButton(android.R.string.ok,
+            DialogInterface.OnClickListener { dialog, which ->
+                dialog.dismiss()
+                closeKeyboard()
+
+                Log.d(TAG, "new folder requested")
+
+                addFolder(folderName = input.text.toString())
+            })
+
+        builder.setNegativeButton(android.R.string.cancel,
+            DialogInterface.OnClickListener { dialog, which ->
+                dialog.cancel()
+                closeKeyboard()
+            })
+
+        //close keyboard when user closes dialog without any action
+        builder.setOnCancelListener { closeKeyboard() }
+
+        val alertDialog: AlertDialog = builder.create()
+
+        //when user clicks enter button on keyboard
+        input.onDone {
+            //dismiss the dialog
+            alertDialog.dismiss()
+            closeKeyboard()
+            //add the folder
+            addFolder(folderName = input.text.toString())
+        }
+
+        alertDialog.show()
+    }
+
 
     private fun focusEditText(et: EditText) {
         et.requestFocus()
@@ -144,7 +162,6 @@ class LibraryFragment : Fragment() {
         val imm = context?.getSystemService(Activity.INPUT_METHOD_SERVICE) as InputMethodManager?
         imm?.toggleSoftInput(InputMethodManager.HIDE_IMPLICIT_ONLY, 0)
     }
-
 
     private fun addFolder(folderName: String) {
         Log.d(TAG, "adding new folder: $folderName")
@@ -211,7 +228,7 @@ class LibraryFragment : Fragment() {
 
         edit?.setOnClickListener {
             Log.d(TAG, "showBottomSheetDialog: edit clicked at index $position")
-            editFolder(position)
+            editFolderDialog(position)
             bottomSheetDialog.dismiss()
         }
         delete?.setOnClickListener {
@@ -229,35 +246,72 @@ class LibraryFragment : Fragment() {
         folderAdapter.notifyItemRemoved(position)
     }
 
-    private fun editFolder(position: Int) {
-        val builder = AlertDialog.Builder(context)
-        builder.setTitle("Edit Folder")
+    private fun editFolderDialog(position: Int) {
+        val builder = MaterialAlertDialogBuilder((activity as AppCompatActivity), R.style.AlertDialogTheme)
 
         val viewInflated: View = LayoutInflater.from(context)
             .inflate(R.layout.popup_folder_name, view as ViewGroup?, false)
+
+        //set the title
+        viewInflated.findViewById<TextView>(R.id.tv_title).text = getString(R.string.edit_folder)
 
         // Set up the input
         val folderName = viewInflated.findViewById(R.id.input) as TextInputEditText
 
         folderName.setText(folders[position].name)
 
+        //focus on folder-name EditText when Dialog is opened and open keyboard
+        focusEditText(folderName)
+
         // Specify the type of input expected
         builder.setView(viewInflated)
 
         builder.setPositiveButton(android.R.string.ok,
-            DialogInterface.OnClickListener { dialog, which ->
+            DialogInterface.OnClickListener { dialog, _ ->
                 dialog.dismiss()
+                closeKeyboard()
 
-                //update WebNovel data in webNovelList
-                folders[position].name = folderName.text.toString()
-
-                //make RecyclerView show updated WebNovel
-                folderAdapter.notifyItemChanged(position)
+                //update the folder name
+                editDialogPositive(position, folderName)
             })
 
         builder.setNegativeButton(android.R.string.cancel,
-            DialogInterface.OnClickListener { dialog, which -> dialog.cancel() })
+            DialogInterface.OnClickListener { dialog, _ ->
+                dialog.cancel()
+                closeKeyboard()
+            })
 
-        builder.show()
+        builder.setOnCancelListener { closeKeyboard() }
+
+        val alertDialog: AlertDialog = builder.create()
+
+        //when user clicks enter button on keyboard
+        folderName.onDone {
+            //dismiss the dialog
+            alertDialog.dismiss()
+            closeKeyboard()
+            //edit the folder
+            editDialogPositive(position, folderName)
+        }
+
+        alertDialog.show()
+    }
+
+    private fun editDialogPositive(position: Int, folderName: TextInputEditText) {
+        //update WebNovel data in webNovelList
+        folders[position].name = folderName.text.toString()
+
+        //make RecyclerView show updated WebNovel
+        folderAdapter.notifyItemChanged(position)
+    }
+
+    fun EditText.onDone(callback: () -> Unit) {
+        setOnEditorActionListener { _, actionId, _ ->
+            if (actionId == EditorInfo.IME_ACTION_DONE) {
+                callback.invoke()
+                return@setOnEditorActionListener true
+            }
+            false
+        }
     }
 }

@@ -7,12 +7,12 @@
     android:padding="20dp">
 
     <TextView
+        android:id="@+id/tv_title"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginBottom="20dp"
         android:textStyle="bold"
-        android:textAppearance="?android:attr/textAppearanceMedium"
-        android:text="@string/add_web_novel" />
+        android:textAppearance="?android:attr/textAppearanceMedium" />
 
     <com.google.android.material.textfield.TextInputLayout
         android:layout_width="match_parent"

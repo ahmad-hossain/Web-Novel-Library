@@ -2,7 +2,6 @@ package com.example.webnovellibrary
 
 import android.R.attr.label
 import android.app.Activity
-import android.app.AlertDialog
 import android.content.*
 import android.os.Bundle
 import android.util.Log
@@ -10,6 +9,7 @@ import android.view.*
 import android.view.inputmethod.InputMethodManager
 import android.widget.EditText
 import android.widget.LinearLayout
+import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat.getSystemService
@@ -117,6 +117,9 @@ class NovelsFragment : Fragment() {
 
                 val viewInflated: View = LayoutInflater.from(context)
                     .inflate(R.layout.popup_web_novel, view as ViewGroup?, false)
+
+                //set the title
+                viewInflated.findViewById<TextView>(R.id.tv_title).text = getString(R.string.add_web_novel)
 
                 // Set up the input
                 val webNovelTitle = viewInflated.findViewById(R.id.et_webNovel_name) as TextInputEditText
@@ -267,11 +270,13 @@ class NovelsFragment : Fragment() {
     }
 
     fun editNovel(position: Int) {
-        val builder = AlertDialog.Builder(context)
-        builder.setTitle("Edit Web Novel")
+        val builder = MaterialAlertDialogBuilder((activity as AppCompatActivity), R.style.AlertDialogTheme)
 
         val viewInflated: View = LayoutInflater.from(context)
             .inflate(R.layout.popup_web_novel, view as ViewGroup?, false)
+
+        //set the title
+        viewInflated.findViewById<TextView>(R.id.tv_title).text = getString(R.string.edit_web_novel)
 
         // Set up the input
         val webNovelTitle = viewInflated.findViewById(R.id.et_webNovel_name) as TextInputEditText
@@ -284,6 +289,9 @@ class NovelsFragment : Fragment() {
         // Specify the type of input expected
         builder.setView(viewInflated)
 
+        //focus on EditText and open the keyboard
+        focusEditText(webNovelTitle)
+
         //Set click listener for webNovelUrl paste button
         urlTextLayout.setEndIconOnClickListener {
             webNovelUrl.setText(clipboardPaste())
@@ -292,6 +300,7 @@ class NovelsFragment : Fragment() {
         builder.setPositiveButton(android.R.string.ok,
             DialogInterface.OnClickListener { dialog, which ->
                 dialog.dismiss()
+                closeKeyboard()
 
                 //update WebNovel data in webNovelList
                 webNovelsList[position].title = webNovelTitle.text.toString()
@@ -303,7 +312,12 @@ class NovelsFragment : Fragment() {
             })
 
         builder.setNegativeButton(android.R.string.cancel,
-            DialogInterface.OnClickListener { dialog, which -> dialog.cancel() })
+            DialogInterface.OnClickListener { dialog, which ->
+                dialog.cancel()
+                closeKeyboard()
+            })
+
+        builder.setOnCancelListener { closeKeyboard() }
 
         builder.show()
     }

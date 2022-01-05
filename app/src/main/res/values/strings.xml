@@ -13,5 +13,9 @@
     <string name="hint_web_novel_name">Web Novel Name</string>
     <string name="move_novel">Move Novel</string>
     <string name="add_web_novel">Add Web Novel</string>
+    <string name="edit_web_novel">Edit Web Novel</string>
     <string name="add_folder">Add Folder</string>
+    <string name="edit_folder">Edit Folder</string>
+    <string name="hint_folder_name">Folder Name</string>
+    <string name="text_sign_in_for_backup">Sign in for Automatic Cloud Backup</string>
 </resources>
