@@ -28,6 +28,10 @@ import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import java.lang.reflect.Type
 import kotlin.properties.Delegates
+import android.content.Intent
+
+
+
 
 
 class WebViewFragment : Fragment() {
@@ -145,17 +149,25 @@ class WebViewFragment : Fragment() {
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
             R.id.refresh -> webView.reload()
+            R.id.share -> shareUrl(webView.url)
             R.id.dark_mode -> toggleDarkMode(item)
         }
 
         return super.onOptionsItemSelected(item)
     }
 
+    private fun shareUrl(url: String?) {
+        val shareIntent = Intent(Intent.ACTION_SEND)
+        shareIntent.type = "text/plain"
+        shareIntent.putExtra(Intent.EXTRA_TEXT, url)
+        startActivity(Intent.createChooser(shareIntent, "Share This Website!"))
+    }
+
     private fun toggleDarkMode(item: MenuItem) {
         if (item.isChecked) {
             //uncheck the checkbox
             item.isChecked = false
-            
+
             //turn OFF WebView dark mode
             if(WebViewFeature.isFeatureSupported(WebViewFeature.FORCE_DARK)) {
                 WebSettingsCompat.setForceDark(webView.settings, WebSettingsCompat.FORCE_DARK_OFF)

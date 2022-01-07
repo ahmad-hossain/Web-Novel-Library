@@ -5,7 +5,6 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
     tools:context=".WebViewFragment">
 
     <com.google.android.material.appbar.AppBarLayout
@@ -13,17 +12,11 @@
         android:layout_height="wrap_content"
         android:theme="@style/ThemeOverlay.MaterialComponents.Dark.ActionBar">
 
-        <com.google.android.material.appbar.CollapsingToolbarLayout
-            android:id="@+id/collapsing_toolbar"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            app:layout_scrollFlags="scroll|enterAlways"
-            app:contentScrim="?attr/colorPrimary"> <!-- gives toolbar plain bg color when collapsed -->
-
             <androidx.appcompat.widget.Toolbar
                 android:id="@+id/webview_toolbar"
                 android:layout_width="match_parent"
                 android:layout_height="?attr/actionBarSize"
+                app:layout_scrollFlags="scroll|enterAlways"
                 style="@style/ToolbarTheme">
 
                 <EditText
@@ -37,22 +30,16 @@
                     android:background="@drawable/shape_rounded_edittext"
                     android:textColor="@color/black"
                     android:textColorHint="@color/grey"
-                    android:hint="Search or enter address" />
+                    android:hint="@string/hint_address_bar" />
             </androidx.appcompat.widget.Toolbar>
-        </com.google.android.material.appbar.CollapsingToolbarLayout>
 
     </com.google.android.material.appbar.AppBarLayout>
 
-    <androidx.core.widget.NestedScrollView
+    <com.example.webnovellibrary.NestedWebView
+        android:id="@+id/webview"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        app:layout_behavior="@string/appbar_scrolling_view_behavior">
-
-        <WebView
-            android:id="@+id/webview"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
-    </androidx.core.widget.NestedScrollView>
+        app:layout_behavior="@string/appbar_scrolling_view_behavior" />
 
     <com.google.android.gms.ads.AdView
         android:id="@+id/adView"
@@ -63,8 +50,3 @@
         app:adUnitId="@string/banner_ad_unit_id" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
-<!--
-nestedScrollingEnabled = false or true in WebView
-fillViewport           = true   in ScrollView
-match_parent height for WebView or wrap_parent
--->

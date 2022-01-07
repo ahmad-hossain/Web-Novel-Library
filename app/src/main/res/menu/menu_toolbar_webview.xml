@@ -5,13 +5,24 @@
 
     <item
         android:id="@+id/refresh"
-        android:title="Refresh Page"
-        android:icon="@drawable/ic_baseline_refresh_24"
-        app:showAsAction="always"/>
-
+        android:title="@string/reload"
+        app:showAsAction="always"
+        android:icon="@drawable/ic_baseline_refresh_24"/>
+    
     <item
-        android:id="@+id/dark_mode"
-        android:title="Dark Mode"
-        android:checkable="true"
-        app:showAsAction="never" />
+        android:title="@string/more"
+        android:icon="@drawable/ic_baseline_more_vert_24"
+        app:showAsAction="always">
+        <menu>
+            <item
+                android:id="@+id/share"
+                android:title="@string/share"
+                android:icon="@android:drawable/ic_menu_share" />
+            <item
+                android:id="@+id/dark_mode"
+                android:title="@string/dark_mode"
+                android:icon="@drawable/ic_baseline_brightness_3_24"
+                android:checkable="true" />
+        </menu>
+    </item>
 </menu>

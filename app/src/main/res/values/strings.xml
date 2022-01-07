@@ -18,4 +18,9 @@
     <string name="edit_folder">Edit Folder</string>
     <string name="hint_folder_name">Folder Name</string>
     <string name="text_sign_in_for_backup">Sign in for Automatic Cloud Backup</string>
+    <string name="reload">Reload</string>
+    <string name="dark_mode">Dark Mode</string>
+    <string name="more">More</string>
+    <string name="share">Share</string>
+    <string name="hint_address_bar">Search or enter address</string>
 </resources>
