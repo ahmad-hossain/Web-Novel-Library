@@ -6,7 +6,7 @@
     <item
         android:id="@+id/add_folder"
         android:icon="@drawable/ic_baseline_create_new_folder_24"
-        android:title="Add Folder"
+        android:title="@string/add_folder"
         app:showAsAction="always" />
 
 </menu>

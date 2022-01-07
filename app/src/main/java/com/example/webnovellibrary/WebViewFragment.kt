@@ -17,6 +17,8 @@ import androidx.appcompat.widget.Toolbar
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.setupWithNavController
+import androidx.webkit.WebSettingsCompat
+import androidx.webkit.WebViewFeature
 import com.google.android.gms.ads.AdRequest
 import com.google.android.gms.ads.AdView
 import com.google.android.gms.ads.MobileAds
@@ -34,17 +36,14 @@ class WebViewFragment : Fragment() {
 
     lateinit var mainToolbar: MaterialToolbar
     lateinit var webViewToolbar: Toolbar
-
     lateinit var bottomNav: BottomNavigationView
-
     lateinit var navHostFragment: NavHostFragment
+    lateinit var lastVisitedUrl: String
+    lateinit var mAdView: AdView
+    lateinit var webView: WebView
 
     var novelPosition by Delegates.notNull<Int>()
     var folderPosition by Delegates.notNull<Int>()
-
-    lateinit var lastVisitedUrl: String
-
-    lateinit var mAdView: AdView
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         // Inflate the layout for this fragment
@@ -56,7 +55,10 @@ class WebViewFragment : Fragment() {
         novelPosition = WebViewFragmentArgs.fromBundle(requireArguments()).novelPosition
         folderPosition = WebViewFragmentArgs.fromBundle(requireArguments()).folderPosition
 
-//        setHasOptionsMenu(true)
+        //set lastVisitedUrl to original url. Prevents crashing if user returns from WebView before it's loaded
+        lastVisitedUrl = url
+
+        setHasOptionsMenu(true)
 
         setToolbarAndNavView(View.GONE)
 
@@ -68,7 +70,7 @@ class WebViewFragment : Fragment() {
         setupToolbarWithNav(webViewToolbar)
 
 
-        val webView = view.findViewById<WebView>(R.id.webview)
+        webView = view.findViewById(R.id.webview)
 
         webView.settings.javaScriptEnabled = true
 
@@ -133,6 +135,40 @@ class WebViewFragment : Fragment() {
         mAdView.loadAd(adRequest)
 
         return view
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+        inflater.inflate(R.menu.menu_toolbar_webview, menu)
+        return super.onCreateOptionsMenu(menu, inflater)
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        when (item.itemId) {
+            R.id.refresh -> webView.reload()
+            R.id.dark_mode -> toggleDarkMode(item)
+        }
+
+        return super.onOptionsItemSelected(item)
+    }
+
+    private fun toggleDarkMode(item: MenuItem) {
+        if (item.isChecked) {
+            //uncheck the checkbox
+            item.isChecked = false
+            
+            //turn OFF WebView dark mode
+            if(WebViewFeature.isFeatureSupported(WebViewFeature.FORCE_DARK)) {
+                WebSettingsCompat.setForceDark(webView.settings, WebSettingsCompat.FORCE_DARK_OFF)
+            }
+        } else {
+            //check the checkbox
+            item.isChecked = true
+
+            //turn ON WebView dark mode
+            if(WebViewFeature.isFeatureSupported(WebViewFeature.FORCE_DARK)) {
+                WebSettingsCompat.setForceDark(webView.settings, WebSettingsCompat.FORCE_DARK_ON)
+            }
+        }
     }
 
     private fun closeKeyboard(view: View) {
