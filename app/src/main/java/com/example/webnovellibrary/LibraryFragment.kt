@@ -45,6 +45,9 @@ class LibraryFragment : Fragment() {
         //set toolbar buttons; required for fragments
         setHasOptionsMenu(true)
 
+        //set toolbar title
+        (activity as AppCompatActivity).supportActionBar?.title = resources.getString(R.string.library)
+
         val rclView = view.findViewById<RecyclerView>(R.id.recycler_view)
 
         //click listener for RecyclerView items
@@ -130,8 +133,8 @@ class LibraryFragment : Fragment() {
 
         builder.setNegativeButton(android.R.string.cancel,
             DialogInterface.OnClickListener { dialog, which ->
+                //cancel the dialog & close the soft keyboard
                 dialog.cancel()
-                closeKeyboard()
             })
 
         //close keyboard when user closes dialog without any action
@@ -278,7 +281,6 @@ class LibraryFragment : Fragment() {
         builder.setNegativeButton(android.R.string.cancel,
             DialogInterface.OnClickListener { dialog, _ ->
                 dialog.cancel()
-                closeKeyboard()
             })
 
         builder.setOnCancelListener { closeKeyboard() }

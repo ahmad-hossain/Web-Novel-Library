@@ -6,7 +6,6 @@ import android.content.*
 import android.os.Bundle
 import android.util.Log
 import android.view.*
-import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.InputMethodManager
 import android.widget.EditText
 import android.widget.LinearLayout
@@ -50,7 +49,7 @@ class NovelsFragment : Fragment() {
 //        val folder = args.folder
 
         //set the toolbar title to the folder name
-        (activity as MainActivity).supportActionBar?.title = folder.name
+        (activity as AppCompatActivity).supportActionBar?.title = folder.name
 
 //        val folder = NovelsFragmentArgs.fromBundle(requireArguments()).folder
         webNovelsList = folder.webNovels
@@ -166,8 +165,8 @@ class NovelsFragment : Fragment() {
 
         builder.setNegativeButton(android.R.string.cancel,
             DialogInterface.OnClickListener { dialog, which ->
+                //cancel the dialog & close the soft keyboard
                 dialog.cancel()
-                closeKeyboard()
             })
 
         builder.setOnCancelListener { closeKeyboard() }
@@ -320,7 +319,6 @@ class NovelsFragment : Fragment() {
         builder.setNegativeButton(android.R.string.cancel,
             DialogInterface.OnClickListener { dialog, which ->
                 dialog.cancel()
-                closeKeyboard()
             })
 
         builder.setOnCancelListener { closeKeyboard() }

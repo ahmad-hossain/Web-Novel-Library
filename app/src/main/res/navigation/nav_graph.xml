@@ -8,7 +8,6 @@
     <fragment
         android:id="@+id/libraryFragment"
         android:name="com.example.webnovellibrary.LibraryFragment"
-        android:label="Library"
         tools:layout="@layout/fragment_library" >
         <action
             android:id="@+id/action_libraryFragment_to_novelsFragment"
@@ -17,7 +16,6 @@
     <fragment
         android:id="@+id/novelsFragment"
         android:name="com.example.webnovellibrary.NovelsFragment"
-        android:label="Novels"
         tools:layout="@layout/fragment_novels" >
         <argument
             android:name="folder"
@@ -32,7 +30,6 @@
     <fragment
         android:id="@+id/webViewFragment"
         android:name="com.example.webnovellibrary.WebViewFragment"
-        android:label=""
         tools:layout="@layout/fragment_web_view" >
         <argument
             android:name="url"

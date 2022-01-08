@@ -39,7 +39,4 @@
         <item name="android:background">@color/eerie_black</item>
     </style>
 
-    <style name="Theme.WebNovelLibrary.Card" parent="Theme.MaterialComponents.DayNight.NoActionBar">
-        <item name="android:background">@color/chinese_black</item>
-    </style>
 </resources>
