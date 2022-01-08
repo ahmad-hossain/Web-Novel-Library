@@ -6,6 +6,7 @@ import android.content.*
 import android.os.Bundle
 import android.util.Log
 import android.view.*
+import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.InputMethodManager
 import android.widget.EditText
 import android.widget.LinearLayout
@@ -113,60 +114,65 @@ class NovelsFragment : Fragment() {
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
             R.id.add_webNovel -> {
-                val builder = MaterialAlertDialogBuilder((activity as AppCompatActivity), R.style.AlertDialogTheme)
-
-                val viewInflated: View = LayoutInflater.from(context)
-                    .inflate(R.layout.popup_web_novel, view as ViewGroup?, false)
-
-                //set the title
-                viewInflated.findViewById<TextView>(R.id.tv_title).text = getString(R.string.add_web_novel)
-
-                // Set up the input
-                val webNovelTitle = viewInflated.findViewById(R.id.et_webNovel_name) as TextInputEditText
-                val webNovelUrl = viewInflated.findViewById(R.id.et_webNovel_url) as TextInputEditText
-                val urlTextLayout = viewInflated.findViewById(R.id.tl_url) as TextInputLayout
-
-                // Specify the type of input expected
-                builder.setView(viewInflated)
-
-                //focus on webNovelTitle EditText when Dialog is opened and open keyboard
-                focusEditText(webNovelTitle)
-
-                //Set click listener for webNovelUrl paste button
-                urlTextLayout.setEndIconOnClickListener {
-                    webNovelUrl.setText(clipboardPaste())
-                }
-
-                builder.setPositiveButton(android.R.string.ok,
-                    DialogInterface.OnClickListener { dialog, which ->
-                        dialog.dismiss()
-
-                        closeKeyboard()
-
-                        val title = webNovelTitle.text.toString()
-                        val url = webNovelUrl.text.toString()
-
-                        Log.d(TAG, "new web novel requested: $title")
-
-                        addNovel(title, url)
-
-                    })
-
-                builder.setNegativeButton(android.R.string.cancel,
-                    DialogInterface.OnClickListener { dialog, which ->
-                        closeKeyboard()
-                        dialog.cancel()
-                    })
-
-                builder.setOnCancelListener { closeKeyboard() }
-
-                builder.show()
+                //show AlertDialog for adding a Web Novel
+                addWebNovelDialog()
 
                 return true
             }
         }
 
         return false
+    }
+
+    private fun addWebNovelDialog() {
+        val builder = MaterialAlertDialogBuilder((activity as AppCompatActivity), R.style.AlertDialogTheme)
+
+        val viewInflated: View = LayoutInflater.from(context)
+            .inflate(R.layout.popup_web_novel, view as ViewGroup?, false)
+
+        //set the title
+        viewInflated.findViewById<TextView>(R.id.tv_title).text = getString(R.string.add_web_novel)
+
+        // Set up the input
+        val webNovelTitle = viewInflated.findViewById(R.id.et_webNovel_name) as TextInputEditText
+        val webNovelUrl = viewInflated.findViewById(R.id.et_webNovel_url) as TextInputEditText
+        val urlTextLayout = viewInflated.findViewById(R.id.tl_url) as TextInputLayout
+
+        // Specify the type of input expected
+        builder.setView(viewInflated)
+
+        //focus on webNovelTitle EditText when Dialog is opened and open keyboard
+        focusEditText(webNovelTitle)
+
+        //Set click listener for webNovelUrl paste button
+        urlTextLayout.setEndIconOnClickListener {
+            webNovelUrl.setText(clipboardPaste())
+        }
+
+        builder.setPositiveButton(android.R.string.ok,
+            DialogInterface.OnClickListener { dialog, which ->
+                dialog.dismiss()
+
+                closeKeyboard()
+
+                val title = webNovelTitle.text.toString()
+                val url = webNovelUrl.text.toString()
+
+                Log.d(TAG, "new web novel requested: $title")
+
+                addNovel(title, url)
+
+            })
+
+        builder.setNegativeButton(android.R.string.cancel,
+            DialogInterface.OnClickListener { dialog, which ->
+                dialog.cancel()
+                closeKeyboard()
+            })
+
+        builder.setOnCancelListener { closeKeyboard() }
+
+        builder.show()
     }
 
     private fun focusEditText(et: EditText) {
