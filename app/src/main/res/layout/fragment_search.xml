@@ -18,6 +18,7 @@
     <com.google.android.material.textfield.TextInputLayout
         android:layout_width="match_parent"
         android:layout_height="45dp"
+        android:layout_marginBottom="10dp"
         style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
         app:hintEnabled="false"
         app:startIconDrawable="@drawable/ic_baseline_search_24">

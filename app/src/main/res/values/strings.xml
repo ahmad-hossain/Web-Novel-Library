@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Web Novel Library</string>
+    <string name="app_name">WebLib</string>
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="data_conflict_choice">Local save data is newer than online data. Choose which data to keep.</string>
@@ -8,7 +8,7 @@
     <string name="resolve_data_conflicts">Resolve Data Conflicts</string>
     <string name="paste">Paste</string>
     <string name="sign_out">Sign out</string>
-    <string name="backup_enabled">Automatic cloud backup is enabled for:</string>
+    <string name="backup_enabled">Auto cloud backup is enabled for:</string>
     <string name="hint_web_novel_url">Web Novel URL</string>
     <string name="hint_web_novel_name">Web Novel Name</string>
     <string name="move_novel">Move Novel</string>
@@ -24,4 +24,6 @@
     <string name="share">Share</string>
     <string name="hint_address_bar">Search or enter address</string>
     <string name="library">Library</string>
+    <string name="account">Account</string>
+    <string name="search">Search</string>
 </resources>

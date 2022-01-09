@@ -58,6 +58,13 @@ class AccountFragment : Fragment() {
         return view
     }
 
+    override fun onResume() {
+        super.onResume()
+
+        //set toolbar title
+        (activity as AppCompatActivity).supportActionBar?.title = resources.getString(R.string.account)
+    }
+
     //update UI based on user sign-in status
     private fun updateUI(
         user: FirebaseUser?,

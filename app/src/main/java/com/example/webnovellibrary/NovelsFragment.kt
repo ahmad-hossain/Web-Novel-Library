@@ -46,12 +46,7 @@ class NovelsFragment : Fragment() {
 
         folderList = loadData()
         folder = folderList[args.position]
-//        val folder = args.folder
 
-        //set the toolbar title to the folder name
-        (activity as AppCompatActivity).supportActionBar?.title = folder.name
-
-//        val folder = NovelsFragmentArgs.fromBundle(requireArguments()).folder
         webNovelsList = folder.webNovels
 
         Log.d(TAG, "opened folder with name: ${folder.name} and ${webNovelsList.size} novels")
@@ -94,6 +89,13 @@ class NovelsFragment : Fragment() {
         itemTouchHelper.attachToRecyclerView(rclView)
 
         return view
+    }
+
+    override fun onResume() {
+        super.onResume()
+
+        //set the toolbar title to the folder name
+        (activity as AppCompatActivity).supportActionBar?.title = folder.name
     }
 
     private fun copyToClipboard(text: String) {

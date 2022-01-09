@@ -12,6 +12,7 @@ import android.view.inputmethod.InputMethodManager
 import android.widget.EditText
 import android.widget.LinearLayout
 import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.navigation.findNavController
@@ -94,6 +95,13 @@ class SearchFragment : Fragment() {
         setupRecyclerView()
 
         return view
+    }
+
+    override fun onResume() {
+        super.onResume()
+
+        //set toolbar title
+        (activity as AppCompatActivity).supportActionBar?.title = resources.getString(R.string.search)
     }
 
     private fun setupRecyclerView() {
