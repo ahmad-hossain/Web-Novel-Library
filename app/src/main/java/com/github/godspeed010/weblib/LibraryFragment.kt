@@ -1,4 +1,4 @@
-package com.example.webnovellibrary
+package com.github.godspeed010.weblib
 
 import android.content.Context.MODE_PRIVATE
 import android.os.Bundle
@@ -66,15 +66,9 @@ class LibraryFragment : Fragment() {
                 showBottomSheetDialog(position)
             }
         }
-        val onLongClickListener = object: FolderAdapter.OnLongClickListener {
-            override fun onItemLongClicked(position: Int) {
-                //TODO reorder folders
-            }
-
-        }
 
         //Setup and display the RecyclerView
-        folderAdapter = FolderAdapter(folders, onClickListener, onLongClickListener)
+        folderAdapter = FolderAdapter(folders, onClickListener)
         rclView.adapter = folderAdapter
         rclView.layoutManager = LinearLayoutManager(context)
 

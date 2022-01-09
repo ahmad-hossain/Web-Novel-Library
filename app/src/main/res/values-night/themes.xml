@@ -39,4 +39,12 @@
         <item name="android:background">@color/eerie_black</item>
     </style>
 
+    <style name="WebViewToolbar">
+        <!-- UP Button -->
+        <item name="colorControlNormal">@color/white</item>
+
+        <!-- Overflow Menu Icons -->
+        <item name="iconTint">@color/white</item>
+    </style>
+
 </resources>

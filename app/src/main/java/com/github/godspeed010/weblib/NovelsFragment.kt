@@ -1,4 +1,4 @@
-package com.example.webnovellibrary
+package com.github.godspeed010.weblib
 
 import android.R.attr.label
 import android.app.Activity

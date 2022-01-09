@@ -1,4 +1,4 @@
-package com.example.webnovellibrary
+package com.github.godspeed010.weblib
 
 import android.app.AlertDialog
 import android.content.Context

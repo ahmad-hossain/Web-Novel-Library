@@ -9,15 +9,15 @@
 
     <com.google.android.material.appbar.AppBarLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:theme="@style/ThemeOverlay.MaterialComponents.Dark.ActionBar">
+        android:layout_height="wrap_content">
 
             <androidx.appcompat.widget.Toolbar
                 android:id="@+id/webview_toolbar"
                 android:layout_width="match_parent"
                 android:layout_height="?attr/actionBarSize"
                 app:layout_scrollFlags="scroll|enterAlways"
-                style="@style/ToolbarTheme">
+                style="@style/ToolbarTheme"
+                android:theme="@style/WebViewToolbar">
 
                 <EditText
                     android:id="@+id/et_address_bar"
@@ -35,7 +35,7 @@
 
     </com.google.android.material.appbar.AppBarLayout>
 
-    <com.example.webnovellibrary.NestedWebView
+    <com.github.godspeed010.weblib.NestedWebView
         android:id="@+id/webview"
         android:layout_width="match_parent"
         android:layout_height="match_parent"

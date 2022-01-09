@@ -1,6 +1,5 @@
-package com.example.webnovellibrary
+package com.github.godspeed010.weblib
 
-import android.text.Layout
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup

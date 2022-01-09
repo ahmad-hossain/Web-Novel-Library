@@ -1,4 +1,4 @@
-package com.example.webnovellibrary
+package com.github.godspeed010.weblib
 
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView

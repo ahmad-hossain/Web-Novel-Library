@@ -16,5 +16,16 @@
         <item name="android:textColor">@color/black</item>
     </style>
 
-    <style name="ToolbarTheme" parent="@style/Widget.MaterialComponents.Toolbar.Primary" />
+    <style name="ToolbarTheme" parent="Widget.MaterialComponents.Toolbar.Primary" />
+
+    <style name="WebViewToolbar">
+        <!-- UP Button -->
+        <item name="colorControlNormal">@color/white</item>
+
+        <!-- Overflow Menu Icons -->
+        <item name="iconTint">@color/black</item>
+
+        <!-- Toolbar Menu Icons -->
+        <item name="drawableTint">@color/white</item>
+    </style>
 </resources>

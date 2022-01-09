@@ -1,8 +1,6 @@
-package com.example.webnovellibrary
+package com.github.godspeed010.weblib
 
-import android.app.AlertDialog
 import android.content.*
-import android.hardware.input.InputManager
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
@@ -10,16 +8,12 @@ import android.util.Log
 import android.view.*
 import android.view.inputmethod.InputMethodManager
 import android.widget.EditText
-import android.widget.LinearLayout
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.navigation.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.google.android.material.bottomsheet.BottomSheetDialog
-import com.google.android.material.textfield.TextInputEditText
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import java.lang.reflect.Type

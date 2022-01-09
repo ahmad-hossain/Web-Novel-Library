@@ -1,4 +1,4 @@
-package com.example.webnovellibrary
+package com.github.godspeed010.weblib
 
 interface ItemTouchHelperAdapter {
     //Called when an item has been dragged far enough to trigger a move

@@ -1,4 +1,4 @@
-package com.example.webnovellibrary
+package com.github.godspeed010.weblib
 
 import android.view.LayoutInflater
 import android.view.View
@@ -9,15 +9,12 @@ import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.card.MaterialCardView
 import java.util.*
 
-class FolderAdapter(private val folders: MutableList<Folder>, val clickListener: OnClickListener, val longClickListener: OnLongClickListener) :
+class FolderAdapter(private val folders: MutableList<Folder>, val clickListener: OnClickListener) :
     RecyclerView.Adapter<FolderAdapter.ViewHolder>(), ItemTouchHelperAdapter {
 
     interface OnClickListener {
         fun onItemClicked(position: Int)
         fun onMoreClicked(position: Int)
-    }
-    interface OnLongClickListener {
-        fun onItemLongClicked(position: Int)
     }
 
     inner class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
@@ -35,10 +32,6 @@ class FolderAdapter(private val folders: MutableList<Folder>, val clickListener:
             }
             cardView.setOnClickListener {
                 clickListener.onItemClicked(adapterPosition)
-            }
-            cardView.setOnLongClickListener {
-                longClickListener.onItemLongClicked(adapterPosition)
-                true
             }
         }
     }

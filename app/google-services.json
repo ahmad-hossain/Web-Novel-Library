@@ -1,41 +1,41 @@
 {
   "project_info": {
-    "project_number": "34077770592",
-    "project_id": "web-novel-library",
-    "storage_bucket": "web-novel-library.appspot.com"
+    "project_number": "544844634604",
+    "project_id": "weblib-df5aa",
+    "storage_bucket": "weblib-df5aa.appspot.com"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:34077770592:android:9a26b7b0a5800ca60fd405",
+        "mobilesdk_app_id": "1:544844634604:android:741e455a99248f4a6cc8c9",
         "android_client_info": {
-          "package_name": "com.example.webnovellibrary"
+          "package_name": "com.github.godspeed010.weblib"
         }
       },
       "oauth_client": [
         {
-          "client_id": "34077770592-i56fprs9o4oosbdr403dpq2ghdrnuark.apps.googleusercontent.com",
+          "client_id": "544844634604-ji585n54t2ale82i92icl0oe20bnk2nj.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
-            "package_name": "com.example.webnovellibrary",
+            "package_name": "com.github.godspeed010.weblib",
             "certificate_hash": "cc1f979a1160a11d853df28a7567fb508c77e085"
           }
         },
         {
-          "client_id": "34077770592-gjcf142prcjsbmmiv97o2ujaofqnsu4i.apps.googleusercontent.com",
+          "client_id": "544844634604-r2asmub90ddfjb7k4sdal7vnlgbn7jv9.apps.googleusercontent.com",
           "client_type": 3
         }
       ],
       "api_key": [
         {
-          "current_key": "AIzaSyCraIwl7oj30luajICttd0SY2n8n-2tb80"
+          "current_key": "AIzaSyDriTeAZwi3Q5uu-P744nSKoULAyXMgq0Q"
         }
       ],
       "services": {
         "appinvite_service": {
           "other_platform_oauth_client": [
             {
-              "client_id": "34077770592-gjcf142prcjsbmmiv97o2ujaofqnsu4i.apps.googleusercontent.com",
+              "client_id": "544844634604-r2asmub90ddfjb7k4sdal7vnlgbn7jv9.apps.googleusercontent.com",
               "client_type": 3
             }
           ]

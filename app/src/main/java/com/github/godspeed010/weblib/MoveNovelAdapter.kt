@@ -1,4 +1,4 @@
-package com.example.webnovellibrary
+package com.github.godspeed010.weblib
 
 import android.view.LayoutInflater
 import android.view.View
@@ -6,7 +6,6 @@ import android.view.ViewGroup
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
-import com.google.android.material.card.MaterialCardView
 
 class MoveNovelAdapter(private val folders: MutableList<String>, val clickListener: OnClickListener) :
     RecyclerView.Adapter<MoveNovelAdapter.ViewHolder>() {
