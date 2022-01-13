@@ -87,14 +87,9 @@ class MainActivity : AppCompatActivity() {
 
             Log.d(TAG, "Found user and new save")
 
-            val database = Firebase.database
-            val myRef = database.reference
+            val databaseRef = Firebase.database.getReference(resources.getString(R.string.fb_data_path, user.uid))
 
-
-            myRef.child("users")
-                .child(user.uid)
-                .child("data")
-                .setValue(currentSaveData)
+            databaseRef.setValue(currentSaveData)
         }
     }
 
