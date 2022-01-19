@@ -104,6 +104,9 @@ class AccountFragment : Fragment() {
         }
 
         signOutButton.setOnClickListener {
+            //save before sign out
+            saveDataToFirebase()
+
             FirebaseAuth.getInstance().signOut() //sign out of firebase auth
             googleSignInClient.signOut() //sign out of googleSignInClient so it doesn't auto-choose same account when signing in again
             Toast.makeText(context, "Signed Out", Toast.LENGTH_SHORT).show()
