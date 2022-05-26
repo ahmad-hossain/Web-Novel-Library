@@ -2,6 +2,7 @@ package com.github.godspeed010.weblib
 
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
+import com.github.godspeed010.weblib.adapters.ItemTouchHelperAdapter
 
 class ReorderHelperCallback(val adapter : ItemTouchHelperAdapter) : ItemTouchHelper.SimpleCallback(ItemTouchHelper.UP or ItemTouchHelper.DOWN, 0) {
 

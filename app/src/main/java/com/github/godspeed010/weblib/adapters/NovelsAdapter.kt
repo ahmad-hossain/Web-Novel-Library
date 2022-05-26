@@ -1,4 +1,4 @@
-package com.github.godspeed010.weblib
+package com.github.godspeed010.weblib.adapters
 
 import android.view.LayoutInflater
 import android.view.View
@@ -7,6 +7,8 @@ import android.widget.ImageButton
 import android.widget.TextView
 import androidx.cardview.widget.CardView
 import androidx.recyclerview.widget.RecyclerView
+import com.github.godspeed010.weblib.R
+import com.github.godspeed010.weblib.models.WebNovel
 import java.util.*
 
 class NovelsAdapter(private var webNovels: List<WebNovel>, val clickListener: OnClickListener, val cardLayoutType: Int = 0) :

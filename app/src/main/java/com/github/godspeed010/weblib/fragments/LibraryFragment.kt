@@ -1,4 +1,4 @@
-package com.github.godspeed010.weblib
+package com.github.godspeed010.weblib.fragments
 
 import android.content.Context.MODE_PRIVATE
 import android.os.Bundle
@@ -29,6 +29,10 @@ import android.view.inputmethod.EditorInfo
 import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
 import androidx.constraintlayout.widget.Group
+import com.github.godspeed010.weblib.models.Folder
+import com.github.godspeed010.weblib.R
+import com.github.godspeed010.weblib.ReorderHelperCallback
+import com.github.godspeed010.weblib.adapters.FolderAdapter
 
 
 class LibraryFragment : Fragment() {
@@ -112,7 +116,9 @@ class LibraryFragment : Fragment() {
     }
 
     private fun addFolderDialog() {
-        val builder = MaterialAlertDialogBuilder((activity as AppCompatActivity), R.style.AlertDialogTheme)
+        val builder = MaterialAlertDialogBuilder((activity as AppCompatActivity),
+            R.style.AlertDialogTheme
+        )
 
         val viewInflated: View = LayoutInflater.from(context)
             .inflate(R.layout.popup_folder_name, view as ViewGroup?, false)
@@ -264,7 +270,9 @@ class LibraryFragment : Fragment() {
     }
 
     private fun editFolderDialog(position: Int) {
-        val builder = MaterialAlertDialogBuilder((activity as AppCompatActivity), R.style.AlertDialogTheme)
+        val builder = MaterialAlertDialogBuilder((activity as AppCompatActivity),
+            R.style.AlertDialogTheme
+        )
 
         val viewInflated: View = LayoutInflater.from(context)
             .inflate(R.layout.popup_folder_name, view as ViewGroup?, false)

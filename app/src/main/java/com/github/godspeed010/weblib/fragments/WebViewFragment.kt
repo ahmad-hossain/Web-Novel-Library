@@ -1,4 +1,4 @@
-package com.github.godspeed010.weblib
+package com.github.godspeed010.weblib.fragments
 
 import android.content.Context
 import android.content.SharedPreferences
@@ -29,9 +29,8 @@ import com.google.gson.reflect.TypeToken
 import java.lang.reflect.Type
 import kotlin.properties.Delegates
 import android.content.Intent
-
-
-
+import com.github.godspeed010.weblib.models.Folder
+import com.github.godspeed010.weblib.R
 
 
 class WebViewFragment : Fragment() {

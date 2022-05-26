@@ -1,4 +1,4 @@
-package com.github.godspeed010.weblib
+package com.github.godspeed010.weblib.fragments
 
 import android.content.*
 import android.os.Bundle
@@ -18,8 +18,10 @@ import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import java.lang.reflect.Type
 import androidx.core.content.ContextCompat.getSystemService
-
-
+import com.github.godspeed010.weblib.models.Folder
+import com.github.godspeed010.weblib.R
+import com.github.godspeed010.weblib.models.WebNovel
+import com.github.godspeed010.weblib.adapters.NovelsAdapter
 
 
 class SearchFragment : Fragment() {

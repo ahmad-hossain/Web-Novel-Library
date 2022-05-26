@@ -7,7 +7,7 @@
 
     <fragment
         android:id="@+id/libraryFragment"
-        android:name="com.github.godspeed010.weblib.LibraryFragment"
+        android:name="com.github.godspeed010.weblib.fragments.LibraryFragment"
         tools:layout="@layout/fragment_library" >
         <action
             android:id="@+id/action_libraryFragment_to_novelsFragment"
@@ -15,11 +15,11 @@
     </fragment>
     <fragment
         android:id="@+id/novelsFragment"
-        android:name="com.github.godspeed010.weblib.NovelsFragment"
+        android:name="com.github.godspeed010.weblib.fragments.NovelsFragment"
         tools:layout="@layout/fragment_novels" >
         <argument
             android:name="folder"
-            app:argType="com.github.godspeed010.weblib.Folder" />
+            app:argType="com.github.godspeed010.weblib.models.Folder" />
         <argument
             android:name="position"
             app:argType="integer" />
@@ -29,7 +29,7 @@
     </fragment>
     <fragment
         android:id="@+id/webViewFragment"
-        android:name="com.github.godspeed010.weblib.WebViewFragment"
+        android:name="com.github.godspeed010.weblib.fragments.WebViewFragment"
         tools:layout="@layout/fragment_web_view" >
         <argument
             android:name="url"
@@ -44,7 +44,7 @@
     </fragment>
     <fragment
         android:id="@+id/searchFragment"
-        android:name="com.github.godspeed010.weblib.SearchFragment"
+        android:name="com.github.godspeed010.weblib.fragments.SearchFragment"
         android:label="Search"
         tools:layout="@layout/fragment_search" >
         <action
@@ -53,7 +53,7 @@
     </fragment>
     <fragment
         android:id="@+id/accountFragment"
-        android:name="com.github.godspeed010.weblib.AccountFragment"
+        android:name="com.github.godspeed010.weblib.fragments.AccountFragment"
         android:label="Account"
         tools:layout="@layout/fragment_account" />
 </navigation>

@@ -1,4 +1,4 @@
-package com.github.godspeed010.weblib
+package com.github.godspeed010.weblib.fragments
 
 import android.R.attr.label
 import android.app.Activity
@@ -20,6 +20,12 @@ import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.github.godspeed010.weblib.models.Folder
+import com.github.godspeed010.weblib.R
+import com.github.godspeed010.weblib.ReorderHelperCallback
+import com.github.godspeed010.weblib.models.WebNovel
+import com.github.godspeed010.weblib.adapters.MoveNovelAdapter
+import com.github.godspeed010.weblib.adapters.NovelsAdapter
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.textfield.TextInputEditText
@@ -140,7 +146,9 @@ class NovelsFragment : Fragment() {
     }
 
     private fun addWebNovelDialog() {
-        val builder = MaterialAlertDialogBuilder((activity as AppCompatActivity), R.style.AlertDialogTheme)
+        val builder = MaterialAlertDialogBuilder((activity as AppCompatActivity),
+            R.style.AlertDialogTheme
+        )
 
         val viewInflated: View = LayoutInflater.from(context)
             .inflate(R.layout.popup_web_novel, view as ViewGroup?, false)
@@ -294,7 +302,9 @@ class NovelsFragment : Fragment() {
     }
 
     fun editNovel(position: Int) {
-        val builder = MaterialAlertDialogBuilder((activity as AppCompatActivity), R.style.AlertDialogTheme)
+        val builder = MaterialAlertDialogBuilder((activity as AppCompatActivity),
+            R.style.AlertDialogTheme
+        )
 
         val viewInflated: View = LayoutInflater.from(context)
             .inflate(R.layout.popup_web_novel, view as ViewGroup?, false)
@@ -406,7 +416,7 @@ class NovelsFragment : Fragment() {
         return folderNames
     }
 
-    private fun setupFoldersRecyclerView(folderNames: MutableList<String>,onClickListener: MoveNovelAdapter.OnClickListener,bottomSheetDialog: BottomSheetDialog?) {
+    private fun setupFoldersRecyclerView(folderNames: MutableList<String>, onClickListener: MoveNovelAdapter.OnClickListener, bottomSheetDialog: BottomSheetDialog?) {
         val foldersAdapter = MoveNovelAdapter(folderNames, onClickListener)
         val recyclerView = bottomSheetDialog?.findViewById<RecyclerView>(R.id.rv_folders)
 

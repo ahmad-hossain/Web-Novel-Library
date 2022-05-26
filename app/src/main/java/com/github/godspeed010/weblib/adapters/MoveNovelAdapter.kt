@@ -1,4 +1,4 @@
-package com.github.godspeed010.weblib
+package com.github.godspeed010.weblib.adapters
 
 import android.view.LayoutInflater
 import android.view.View
@@ -6,6 +6,7 @@ import android.view.ViewGroup
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
+import com.github.godspeed010.weblib.R
 
 class MoveNovelAdapter(private val folders: MutableList<String>, val clickListener: OnClickListener) :
     RecyclerView.Adapter<MoveNovelAdapter.ViewHolder>() {

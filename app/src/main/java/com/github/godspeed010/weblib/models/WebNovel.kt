@@ -1,4 +1,4 @@
-package com.github.godspeed010.weblib
+package com.github.godspeed010.weblib.models
 
 import android.os.Parcelable
 import kotlinx.android.parcel.Parcelize
