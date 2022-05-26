@@ -28,6 +28,7 @@ import android.app.Activity
 import android.view.inputmethod.EditorInfo
 import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
+import androidx.constraintlayout.widget.Group
 
 
 class LibraryFragment : Fragment() {
@@ -36,6 +37,7 @@ class LibraryFragment : Fragment() {
 
     var folders = mutableListOf<Folder>()
     lateinit var folderAdapter: FolderAdapter
+    lateinit var guideGroup: Group
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val view = inflater.inflate(R.layout.fragment_library, container, false)
@@ -76,7 +78,19 @@ class LibraryFragment : Fragment() {
         val itemTouchHelper = ItemTouchHelper( ReorderHelperCallback(folderAdapter) )
         itemTouchHelper.attachToRecyclerView(rclView)
 
+        //display the click-to-add-folder guide when RecyclerView is empty
+        guideGroup = view.findViewById(R.id.gp_guide_folder)
+        setGuideVisibility()
+
         return view
+    }
+
+    //sets visibility of guideGroup based on whether RecyclerView is empty or not
+    private fun setGuideVisibility() {
+        if (folderAdapter.itemCount == 0)
+            guideGroup.visibility = View.VISIBLE
+        else
+            guideGroup.visibility = View.GONE
     }
 
     //adds items in menu resource file to the toolbar
@@ -164,6 +178,9 @@ class LibraryFragment : Fragment() {
         Log.d(TAG, "adding new folder: $folderName")
         folders.add( Folder(folderName) )
         folderAdapter.notifyItemInserted(folders.size - 1)
+
+        //if guide group is visible, make invisible.
+        setGuideVisibility()
     }
 
     override fun onStop() {
@@ -241,6 +258,9 @@ class LibraryFragment : Fragment() {
     private fun deleteFolder(position: Int) {
         folders.removeAt(position)
         folderAdapter.notifyItemRemoved(position)
+
+        //if RecyclerView is empty, make guide visible
+        setGuideVisibility()
     }
 
     private fun editFolderDialog(position: Int) {

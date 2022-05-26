@@ -12,6 +12,7 @@ import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.constraintlayout.widget.Group
 import androidx.core.content.ContextCompat.getSystemService
 import androidx.fragment.app.Fragment
 import androidx.navigation.findNavController
@@ -38,6 +39,7 @@ class NovelsFragment : Fragment() {
 
     lateinit var folder: Folder
     lateinit var folderList: MutableList<Folder>
+    lateinit var guideGroup: Group
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val view = inflater.inflate(R.layout.fragment_novels, container, false)
@@ -88,7 +90,19 @@ class NovelsFragment : Fragment() {
         val itemTouchHelper = ItemTouchHelper( ReorderHelperCallback(novelsAdapter) )
         itemTouchHelper.attachToRecyclerView(rclView)
 
+        //display the click-to-add-novel guide when RecyclerView is empty
+        guideGroup = view.findViewById(R.id.gp_guide_novel)
+        setGuideVisibility()
+
         return view
+    }
+
+    //sets visibility of guideGroup based on whether RecyclerView is empty or not
+    private fun setGuideVisibility() {
+        if (novelsAdapter.itemCount == 0)
+            guideGroup.visibility = View.VISIBLE
+        else
+            guideGroup.visibility = View.GONE
     }
 
     override fun onResume() {
@@ -191,6 +205,9 @@ class NovelsFragment : Fragment() {
         Log.d(TAG, "adding new webNovel $title with url: $url")
         webNovelsList.add( WebNovel(title, url) )
         novelsAdapter.notifyItemInserted(webNovelsList.size - 1)
+
+        //if guide group is visible, make invisible.
+        setGuideVisibility()
     }
 
     override fun onStop() {
@@ -337,6 +354,9 @@ class NovelsFragment : Fragment() {
     fun deleteNovel(position: Int) {
         webNovelsList.removeAt(position)
         novelsAdapter.notifyItemRemoved(position)
+
+        //if RecyclerView is empty, make guide visible
+        setGuideVisibility()
     }
 
     private fun showFoldersBottomSheetDialog(novelPosition: Int) {
