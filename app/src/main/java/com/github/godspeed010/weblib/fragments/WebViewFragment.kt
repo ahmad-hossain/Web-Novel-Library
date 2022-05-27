@@ -31,6 +31,8 @@ import kotlin.properties.Delegates
 import android.content.Intent
 import com.github.godspeed010.weblib.models.Folder
 import com.github.godspeed010.weblib.R
+import com.github.godspeed010.weblib.hideKeyboard
+import com.github.godspeed010.weblib.preferences.PreferencesUtils
 
 
 class WebViewFragment : Fragment() {
@@ -109,27 +111,28 @@ class WebViewFragment : Fragment() {
         }
 
         //address bar action listener for letting user change url
-        view.findViewById<EditText>(R.id.et_address_bar).setOnEditorActionListener { textView, i, keyEvent ->
-            Log.d(TAG, "Action in address bar")
+        view.findViewById<EditText>(R.id.et_address_bar)
+            .setOnEditorActionListener { textView, i, keyEvent ->
+                Log.d(TAG, "Action in address bar")
 
-            closeKeyboard(view)
+                hideKeyboard()
 
-            val address = textView.text.toString()
-            val isAddress = Patterns.WEB_URL.matcher(address).matches()
+                val address = textView.text.toString()
+                val isAddress = Patterns.WEB_URL.matcher(address).matches()
 
-            //load webpage if valid
-            if (isAddress) {
-                webView.loadUrl(address)
+                //load webpage if valid
+                if (isAddress) {
+                    webView.loadUrl(address)
+                }
+                //Google search if not valid webpage
+                else {
+                    webView.loadUrl(
+                        "https://www.google.com/search?q=$address"
+                    )
+                }
+
+                true
             }
-            //Google search if not valid webpage
-            else {
-                webView.loadUrl(
-                    "https://www.google.com/search?q=$address"
-                )
-            }
-
-            true
-        }
 
         MobileAds.initialize(activity)
 
@@ -168,7 +171,7 @@ class WebViewFragment : Fragment() {
             item.isChecked = false
 
             //turn OFF WebView dark mode
-            if(WebViewFeature.isFeatureSupported(WebViewFeature.FORCE_DARK)) {
+            if (WebViewFeature.isFeatureSupported(WebViewFeature.FORCE_DARK)) {
                 WebSettingsCompat.setForceDark(webView.settings, WebSettingsCompat.FORCE_DARK_OFF)
             }
         } else {
@@ -176,15 +179,10 @@ class WebViewFragment : Fragment() {
             item.isChecked = true
 
             //turn ON WebView dark mode
-            if(WebViewFeature.isFeatureSupported(WebViewFeature.FORCE_DARK)) {
+            if (WebViewFeature.isFeatureSupported(WebViewFeature.FORCE_DARK)) {
                 WebSettingsCompat.setForceDark(webView.settings, WebSettingsCompat.FORCE_DARK_ON)
             }
         }
-    }
-
-    private fun closeKeyboard(view: View) {
-        val manager = context?.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager?
-        manager?.hideSoftInputFromWindow(view.windowToken, 0)
     }
 
     override fun onDestroyView() {
@@ -222,49 +220,12 @@ class WebViewFragment : Fragment() {
     }
 
     fun overwriteSave() {
-        val folders = loadData()
+        val folders = PreferencesUtils.loadFolders(activity)
 
         //update the url for the novel
         folders[folderPosition].webNovels[novelPosition].url = lastVisitedUrl.toString()
 
         //save the updated data
-        saveData(folders)
-    }
-
-    fun loadData(): MutableList<Folder> {
-
-        val sharedPreferences: SharedPreferences =
-            activity!!.getSharedPreferences("shared preferences", Context.MODE_PRIVATE)
-
-        val gson = Gson()
-
-        val emptyList = Gson().toJson(ArrayList<Folder>())
-        val json = sharedPreferences.getString("foldersList", emptyList)
-
-        val type: Type = object : TypeToken<ArrayList<Folder?>?>() {}.type
-
-        var oldFolders: MutableList<Folder> = gson.fromJson(json, type)
-
-        if (oldFolders == null) {
-
-            oldFolders = mutableListOf<Folder>()
-        }
-
-        return oldFolders
-    }
-
-    fun saveData(folders: MutableList<Folder>) {
-        val sharedPreferences: SharedPreferences =
-            activity!!.getSharedPreferences("shared preferences", Context.MODE_PRIVATE)
-
-        val editor = sharedPreferences.edit()
-
-        val gson = Gson()
-
-        val json: String = gson.toJson(folders)
-
-        editor.putString("foldersList", json)
-
-        editor.apply()
+        PreferencesUtils.saveFolders(activity, folders)
     }
 }

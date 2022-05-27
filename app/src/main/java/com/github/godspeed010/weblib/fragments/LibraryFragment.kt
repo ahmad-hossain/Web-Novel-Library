@@ -1,6 +1,6 @@
 package com.github.godspeed010.weblib.fragments
 
-import android.content.Context.MODE_PRIVATE
+import android.content.res.ColorStateList
 import android.os.Bundle
 import android.util.Log
 import android.view.*
@@ -11,28 +11,25 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.textfield.TextInputEditText
 
-import android.content.*
-import android.view.inputmethod.InputMethodManager
-import android.widget.EditText
-import com.google.gson.Gson
-import com.google.gson.reflect.TypeToken
+import android.graphics.Rect
 
-import android.widget.LinearLayout
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.ItemTouchHelper
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
-import java.lang.reflect.Type
-import kotlin.collections.ArrayList
-import android.app.Activity
 import android.view.inputmethod.EditorInfo
-import android.widget.TextView
+import android.widget.*
 import androidx.appcompat.app.AlertDialog
 import androidx.constraintlayout.widget.Group
+import androidx.core.content.ContextCompat
 import com.github.godspeed010.weblib.models.Folder
 import com.github.godspeed010.weblib.R
 import com.github.godspeed010.weblib.ReorderHelperCallback
 import com.github.godspeed010.weblib.adapters.FolderAdapter
+import com.github.godspeed010.weblib.hideKeyboard
+import com.github.godspeed010.weblib.showKeyboard
+import com.github.godspeed010.weblib.models.FolderColor
+import com.github.godspeed010.weblib.preferences.PreferencesUtils
 
 
 class LibraryFragment : Fragment() {
@@ -46,18 +43,19 @@ class LibraryFragment : Fragment() {
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val view = inflater.inflate(R.layout.fragment_library, container, false)
 
-        loadData()
+        folders = PreferencesUtils.loadFolders(activity)
 
         //set toolbar buttons; required for fragments
         setHasOptionsMenu(true)
 
         //set toolbar title
-        (activity as AppCompatActivity).supportActionBar?.title = resources.getString(R.string.library)
+        (activity as AppCompatActivity).supportActionBar?.title =
+            resources.getString(R.string.library)
 
         val rclView = view.findViewById<RecyclerView>(R.id.recycler_view)
 
         //click listener for RecyclerView items
-        val onClickListener = object: FolderAdapter.OnClickListener {
+        val onClickListener = object : FolderAdapter.OnClickListener {
             override fun onItemClicked(position: Int) {
                 Log.d(TAG, "onItemClicked: clicked ${folders[position].name}")
 
@@ -79,7 +77,7 @@ class LibraryFragment : Fragment() {
         rclView.layoutManager = LinearLayoutManager(context)
 
         //setup RecyclerView for switching items
-        val itemTouchHelper = ItemTouchHelper( ReorderHelperCallback(folderAdapter) )
+        val itemTouchHelper = ItemTouchHelper(ReorderHelperCallback(folderAdapter))
         itemTouchHelper.attachToRecyclerView(rclView)
 
         //display the click-to-add-folder guide when RecyclerView is empty
@@ -115,8 +113,28 @@ class LibraryFragment : Fragment() {
         return false
     }
 
+    private fun addColorsToDialog(radioGroup: RadioGroup)
+    {
+        enumValues<FolderColor>().forEach {
+            val button = RadioButton(context)
+            button.apply {
+                text = ""
+                tag = it
+                buttonTintList = ColorStateList(
+                    arrayOf(intArrayOf(android.R.attr.state_enabled)),
+                    intArrayOf(ContextCompat.getColor(requireContext(), it.rgbId))
+                )
+                layoutParams = LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT)
+                setPadding(15, 0, 15, 0)
+            }
+            radioGroup.addView(button)
+        }
+        radioGroup.check(radioGroup.getChildAt(0).id)
+    }
+
     private fun addFolderDialog() {
-        val builder = MaterialAlertDialogBuilder((activity as AppCompatActivity),
+        val builder = MaterialAlertDialogBuilder(
+            (activity as AppCompatActivity),
             R.style.AlertDialogTheme
         )
 
@@ -128,61 +146,67 @@ class LibraryFragment : Fragment() {
 
         // Set up the input
         val input = viewInflated.findViewById(R.id.input) as TextInputEditText
+        val inputColor = viewInflated.findViewById(R.id.inputColor) as RadioGroup
+
+        // Setup the folder colors
+        addColorsToDialog(inputColor)
 
         // Specify the type of input expected
         builder.setView(viewInflated)
 
         //focus on folder-name EditText when Dialog is opened and open keyboard
-        focusEditText(input)
+        showKeyboard(input)
 
-        builder.setPositiveButton(android.R.string.ok,
-            DialogInterface.OnClickListener { dialog, which ->
-                dialog.dismiss()
-                closeKeyboard()
+        builder.setPositiveButton(android.R.string.ok) { dialog, _ ->
+            dialog.dismiss()
+            hideKeyboard()
 
-                Log.d(TAG, "new folder requested")
+            Log.d(TAG, "new folder requested")
 
-                addFolder(folderName = input.text.toString())
-            })
+            val selectedButton = inputColor.findViewById<RadioButton>(inputColor.checkedRadioButtonId)
 
-        builder.setNegativeButton(android.R.string.cancel,
-            DialogInterface.OnClickListener { dialog, which ->
-                //cancel the dialog & close the soft keyboard
-                dialog.cancel()
-            })
+            val folderColor = selectedButton.tag as FolderColor
+
+            Log.d(TAG, "Folder Color: " + folderColor.name)
+
+            addFolder(folderName = input.text.toString(), folderColor = folderColor)
+        }
+
+        builder.setNegativeButton(android.R.string.cancel) { dialog, _ ->
+            //cancel the dialog & close the soft keyboard
+            dialog.cancel()
+        }
 
         //close keyboard when user closes dialog without any action
-        builder.setOnCancelListener { closeKeyboard() }
+        builder.setOnCancelListener { hideKeyboard() }
 
         val alertDialog: AlertDialog = builder.create()
 
         //when user clicks enter button on keyboard
         input.onDone {
-            //dismiss the dialog
-            alertDialog.dismiss()
-            closeKeyboard()
-            //add the folder
-            addFolder(folderName = input.text.toString())
+            val bounds = Rect()
+            requireView().getHitRect(bounds)
+
+            hideKeyboard()
+
+            val selectedButton = inputColor.findViewById<RadioButton>(inputColor.checkedRadioButtonId)
+
+            val folderColor = selectedButton.tag as FolderColor
+
+            // Check that the colors are visible, if they are
+            // dismiss the dialog
+            if (inputColor.getLocalVisibleRect(bounds)) {
+                alertDialog.dismiss()
+                addFolder(folderName = input.text.toString(), folderColor = folderColor)
+            }
         }
 
         alertDialog.show()
     }
 
-
-    private fun focusEditText(et: EditText) {
-        et.requestFocus()
-        val imm = context?.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager?
-        imm?.toggleSoftInput(InputMethodManager.SHOW_FORCED, InputMethodManager.HIDE_IMPLICIT_ONLY)
-    }
-
-    private fun closeKeyboard() {
-        val imm = context?.getSystemService(Activity.INPUT_METHOD_SERVICE) as InputMethodManager?
-        imm?.toggleSoftInput(InputMethodManager.HIDE_IMPLICIT_ONLY, 0)
-    }
-
-    private fun addFolder(folderName: String) {
+    private fun addFolder(folderName: String, folderColor: FolderColor) {
         Log.d(TAG, "adding new folder: $folderName")
-        folders.add( Folder(folderName) )
+        folders.add(Folder(folderName, folderColor))
         folderAdapter.notifyItemInserted(folders.size - 1)
 
         //if guide group is visible, make invisible.
@@ -192,50 +216,10 @@ class LibraryFragment : Fragment() {
     override fun onStop() {
         super.onStop()
 
-        saveData()
+        PreferencesUtils.saveFolders(activity, folders)
 
         Log.d(TAG, "stopping")
         Log.d(TAG, "there are ${folders.size} folders ")
-    }
-
-    private fun saveData() {
-        val sharedPreferences: SharedPreferences =
-            activity!!.getSharedPreferences("shared preferences", MODE_PRIVATE)
-
-        val editor = sharedPreferences.edit()
-
-        val gson = Gson()
-
-        val json: String = gson.toJson(folders)
-
-        editor.putString("foldersList", json)
-
-        editor.apply()
-    }
-
-    private fun loadData() {
-
-        val sharedPreferences: SharedPreferences =
-            activity!!.getSharedPreferences("shared preferences", MODE_PRIVATE)
-
-        val gson = Gson()
-
-        val emptyList = Gson().toJson(ArrayList<Folder>())
-        val json = sharedPreferences.getString("foldersList", emptyList)
-
-        val type: Type = object : TypeToken<ArrayList<Folder?>?>() {}.type
-
-        folders = gson.fromJson(json, type)
-
-        if (folders == null) {
-
-            folders = mutableListOf<Folder>()
-        }
-    }
-
-    fun updateFolder(folder: Folder, position: Int) {
-        folders[position] = folder
-        saveData()
     }
 
     fun showBottomSheetDialog(position: Int) {
@@ -270,7 +254,8 @@ class LibraryFragment : Fragment() {
     }
 
     private fun editFolderDialog(position: Int) {
-        val builder = MaterialAlertDialogBuilder((activity as AppCompatActivity),
+        val builder = MaterialAlertDialogBuilder(
+            (activity as AppCompatActivity),
             R.style.AlertDialogTheme
         )
 
@@ -282,48 +267,67 @@ class LibraryFragment : Fragment() {
 
         // Set up the input
         val folderName = viewInflated.findViewById(R.id.input) as TextInputEditText
+        val folderColorGroup = viewInflated.findViewById(R.id.inputColor) as RadioGroup
+
+        // Setup the folder colors
+        addColorsToDialog(folderColorGroup)
+
+        // Set default values based on existing folder
+        val radioButton = folderColorGroup.findViewWithTag<RadioButton>(folders[position].color)
+
+        folderColorGroup.check(radioButton.id)
 
         folderName.setText(folders[position].name)
 
         //focus on folder-name EditText when Dialog is opened and open keyboard
-        focusEditText(folderName)
+        showKeyboard(folderName)
 
         // Specify the type of input expected
         builder.setView(viewInflated)
 
-        builder.setPositiveButton(android.R.string.ok,
-            DialogInterface.OnClickListener { dialog, _ ->
-                dialog.dismiss()
-                closeKeyboard()
+        builder.setPositiveButton(android.R.string.ok) { dialog, _ ->
+            dialog.dismiss()
+            hideKeyboard()
 
-                //update the folder name
-                editDialogPositive(position, folderName)
-            })
+            val selectedButton = folderColorGroup.findViewById<RadioButton>(folderColorGroup.checkedRadioButtonId)
 
-        builder.setNegativeButton(android.R.string.cancel,
-            DialogInterface.OnClickListener { dialog, _ ->
-                dialog.cancel()
-            })
+            //update the folder name
+            editDialogPositive(position, folderName, selectedButton.tag as FolderColor)
+        }
 
-        builder.setOnCancelListener { closeKeyboard() }
+        builder.setNegativeButton(android.R.string.cancel) { dialog, _ ->
+            dialog.cancel()
+        }
+
+        builder.setOnCancelListener { hideKeyboard() }
 
         val alertDialog: AlertDialog = builder.create()
 
         //when user clicks enter button on keyboard
         folderName.onDone {
-            //dismiss the dialog
-            alertDialog.dismiss()
-            closeKeyboard()
-            //edit the folder
-            editDialogPositive(position, folderName)
+            val bounds = Rect()
+            requireView().getHitRect(bounds)
+
+            hideKeyboard()
+
+            val selectedButton = folderColorGroup.findViewById<RadioButton>(folderColorGroup.checkedRadioButtonId)
+
+            // Check that the colors are visible, if they are
+            // dismiss the dialog
+            if (folderColorGroup.getLocalVisibleRect(bounds)) {
+                alertDialog.dismiss()
+                editDialogPositive(position = position, folderName = folderName, folderColor = selectedButton.tag as FolderColor)
+            }
         }
 
         alertDialog.show()
     }
 
-    private fun editDialogPositive(position: Int, folderName: TextInputEditText) {
+    private fun editDialogPositive(position: Int, folderName: TextInputEditText, folderColor: FolderColor) {
         //update WebNovel data in webNovelList
         folders[position].name = folderName.text.toString()
+
+        folders[position].color = folderColor
 
         //make RecyclerView show updated WebNovel
         folderAdapter.notifyItemChanged(position)

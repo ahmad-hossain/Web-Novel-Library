@@ -6,7 +6,6 @@ import android.text.Editable
 import android.text.TextWatcher
 import android.util.Log
 import android.view.*
-import android.view.inputmethod.InputMethodManager
 import android.widget.EditText
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
@@ -14,14 +13,13 @@ import androidx.fragment.app.Fragment
 import androidx.navigation.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.google.gson.Gson
-import com.google.gson.reflect.TypeToken
-import java.lang.reflect.Type
 import androidx.core.content.ContextCompat.getSystemService
-import com.github.godspeed010.weblib.models.Folder
 import com.github.godspeed010.weblib.R
 import com.github.godspeed010.weblib.models.WebNovel
 import com.github.godspeed010.weblib.adapters.NovelsAdapter
+import com.github.godspeed010.weblib.hideKeyboard
+import com.github.godspeed010.weblib.preferences.PreferencesUtils
+import com.github.godspeed010.weblib.showKeyboard
 
 
 class SearchFragment : Fragment() {
@@ -42,7 +40,7 @@ class SearchFragment : Fragment() {
         val searchEditText = view.findViewById<EditText>(R.id.et_search)
 
         //focus on and open keyboard for EditText as soon as Fragment is opened
-        focusEditText(searchEditText)
+        showKeyboard(searchEditText)
         searchEditText.addTextChangedListener(object : TextWatcher {
 
             override fun onTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {
@@ -112,7 +110,7 @@ class SearchFragment : Fragment() {
         filteredList.clear()
         filteredListIndices.clear()
 
-        val folders = loadData()
+        val folders = PreferencesUtils.loadFolders(activity)
 
         for (folderIndex in folders.indices) {
             val folder = folders[folderIndex]
@@ -136,45 +134,10 @@ class SearchFragment : Fragment() {
         adapter.filterList(filteredList)
     }
 
-    fun loadData(): MutableList<Folder> {
-
-        val sharedPreferences: SharedPreferences =
-            activity!!.getSharedPreferences("shared preferences", Context.MODE_PRIVATE)
-
-        val gson = Gson()
-
-        val emptyList = Gson().toJson(ArrayList<Folder>())
-        val json = sharedPreferences.getString("foldersList", emptyList)
-
-        val type: Type = object : TypeToken<ArrayList<Folder?>?>() {}.type
-
-        var folders: MutableList<Folder> = gson.fromJson(json, type)
-
-        if (folders == null) {
-
-            folders = mutableListOf<Folder>()
-        }
-
-        return folders
-    }
-
-    private fun focusEditText(et: EditText) {
-        et.requestFocus()
-        val imm = context?.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager?
-        imm?.toggleSoftInput(InputMethodManager.SHOW_FORCED, InputMethodManager.HIDE_IMPLICIT_ONLY)
-    }
-
-    private fun closeKeyboard() {
-        activity?.currentFocus?.let { view ->
-            val imm = context?.getSystemService(Context.INPUT_METHOD_SERVICE) as? InputMethodManager
-            imm?.hideSoftInputFromWindow(view.windowToken, 0)
-        }
-    }
-
     override fun onStop() {
         super.onStop()
 
-        closeKeyboard()
+        hideKeyboard()
     }
 }
 

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Folder Colors -->
+    <color name="folder_vanilla">#89FFFFFF</color>
+    <!-- Uses Material 400 from https://material.io/resources/color/ -->
+    <color name="folder_red">#EF5350</color>
+    <color name="folder_orange">#FFA726</color>
+    <color name="folder_yellow">#FFEE58</color>
+    <color name="folder_green">#66BB6A</color>
+    <color name="folder_blue">#42A5F5</color>
+    <color name="folder_purple">#AB47BC</color>
+</resources>

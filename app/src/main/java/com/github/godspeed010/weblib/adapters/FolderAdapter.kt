@@ -5,6 +5,9 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageButton
 import android.widget.TextView
+import android.widget.ImageView
+import androidx.core.content.ContextCompat
+import androidx.core.graphics.drawable.DrawableCompat
 import androidx.recyclerview.widget.RecyclerView
 import com.github.godspeed010.weblib.models.Folder
 import com.github.godspeed010.weblib.R
@@ -20,11 +23,13 @@ class FolderAdapter(private val folders: MutableList<Folder>, val clickListener:
     }
 
     inner class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+        val folderImage: ImageView
         val folderName: TextView
         val cardView: MaterialCardView
         val moreButton: ImageButton
 
         init {
+            folderImage = itemView.findViewById(R.id.im_folder)
             folderName = itemView.findViewById(R.id.tv_folder_name)
             cardView = itemView.findViewById(R.id.card_view)
             moreButton = itemView.findViewById(R.id.bt_more)
@@ -46,8 +51,19 @@ class FolderAdapter(private val folders: MutableList<Folder>, val clickListener:
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val element = folders[position]
+        var color = ContextCompat.getColor(holder.folderImage.context, element.color.rgbId)
 
         holder.folderName.text = element.name
+        holder.folderName.setTextColor(color)
+
+        val drawable = holder.folderImage.drawable
+        if(drawable != null)
+        {
+            val wrapped = DrawableCompat.wrap(drawable);
+            drawable.mutate()
+            DrawableCompat.setTint(wrapped, color)
+            holder.folderImage.setImageDrawable(drawable)
+        }
 
     }
 
