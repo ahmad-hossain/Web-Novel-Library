@@ -5,6 +5,6 @@ import kotlinx.android.parcel.Parcelize
 
 @Parcelize
 data class WebNovel (
-    var title: String,
-    var url: String
+    var title: String = "",
+    var url: String = ""
     ): Parcelable

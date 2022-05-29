@@ -20,4 +20,14 @@
     <!--    <color name="azure_blue">#007fff</color>-->
 
     <color name="dark_gunmetal">#232528</color>
+
+    <!-- Folder Colors -->
+    <color name="folder_vanilla">#89000000</color>
+    <!-- Uses Material 500 from https://material.io/resources/color/ -->
+    <color name="folder_red">#F44336</color>
+    <color name="folder_orange">#FF9800</color>
+    <color name="folder_yellow">#FFEB3B</color>
+    <color name="folder_green">#4CAF50</color>
+    <color name="folder_blue">#2196F3</color>
+    <color name="folder_purple">#9C27B0</color>
 </resources>

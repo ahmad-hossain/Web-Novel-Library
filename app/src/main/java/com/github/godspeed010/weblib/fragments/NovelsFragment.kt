@@ -1,13 +1,10 @@
 package com.github.godspeed010.weblib.fragments
 
 import android.R.attr.label
-import android.app.Activity
 import android.content.*
 import android.os.Bundle
 import android.util.Log
 import android.view.*
-import android.view.inputmethod.InputMethodManager
-import android.widget.EditText
 import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
@@ -30,9 +27,9 @@ import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.textfield.TextInputEditText
 import com.google.android.material.textfield.TextInputLayout
-import com.google.gson.Gson
-import com.google.gson.reflect.TypeToken
-import java.lang.reflect.Type
+import com.github.godspeed010.weblib.hideKeyboard
+import com.github.godspeed010.weblib.preferences.PreferencesUtils
+import com.github.godspeed010.weblib.showKeyboard
 
 
 class NovelsFragment : Fragment() {
@@ -52,7 +49,7 @@ class NovelsFragment : Fragment() {
 
         setHasOptionsMenu(true)
 
-        folderList = loadData()
+        folderList = PreferencesUtils.loadFolders(activity)
         folder = folderList[args.position]
 
         webNovelsList = folder.webNovels
@@ -63,12 +60,15 @@ class NovelsFragment : Fragment() {
         val rclView = view.findViewById<RecyclerView>(R.id.recycler_view2)
 
         //click listener for RecyclerView items
-        val onClickListener = object: NovelsAdapter.OnClickListener {
+        val onClickListener = object : NovelsAdapter.OnClickListener {
             override fun onItemClicked(position: Int) {
                 Log.d(TAG, "onItemClicked: clicked item $position")
 
-                val action = NovelsFragmentDirections.
-                    actionNovelsFragmentToWebViewFragment(url = webNovelsList[position].url, novelPosition = position, folderPosition = args.position)
+                val action = NovelsFragmentDirections.actionNovelsFragmentToWebViewFragment(
+                    url = webNovelsList[position].url,
+                    novelPosition = position,
+                    folderPosition = args.position
+                )
                 view.findNavController().navigate(action)
 
             }
@@ -93,7 +93,7 @@ class NovelsFragment : Fragment() {
         rclView.layoutManager = LinearLayoutManager(context)
 
         //setup RecyclerView for switching items
-        val itemTouchHelper = ItemTouchHelper( ReorderHelperCallback(novelsAdapter) )
+        val itemTouchHelper = ItemTouchHelper(ReorderHelperCallback(novelsAdapter))
         itemTouchHelper.attachToRecyclerView(rclView)
 
         //display the click-to-add-novel guide when RecyclerView is empty
@@ -146,7 +146,8 @@ class NovelsFragment : Fragment() {
     }
 
     private fun addWebNovelDialog() {
-        val builder = MaterialAlertDialogBuilder((activity as AppCompatActivity),
+        val builder = MaterialAlertDialogBuilder(
+            (activity as AppCompatActivity),
             R.style.AlertDialogTheme
         )
 
@@ -165,53 +166,40 @@ class NovelsFragment : Fragment() {
         builder.setView(viewInflated)
 
         //focus on webNovelTitle EditText when Dialog is opened and open keyboard
-        focusEditText(webNovelTitle)
+        showKeyboard(webNovelTitle)
 
         //Set click listener for webNovelUrl paste button
         urlTextLayout.setEndIconOnClickListener {
             webNovelUrl.setText(clipboardPaste())
         }
 
-        builder.setPositiveButton(android.R.string.ok,
-            DialogInterface.OnClickListener { dialog, which ->
-                dialog.dismiss()
+        builder.setPositiveButton(android.R.string.ok) { dialog, _ ->
+            dialog.dismiss()
 
-                closeKeyboard()
+            hideKeyboard()
 
-                val title = webNovelTitle.text.toString()
-                val url = webNovelUrl.text.toString()
+            val title = webNovelTitle.text.toString()
+            val url = webNovelUrl.text.toString()
 
-                Log.d(TAG, "new web novel requested: $title")
+            Log.d(TAG, "new web novel requested: $title")
 
-                addNovel(title, url)
+            addNovel(title, url)
 
-            })
+        }
 
-        builder.setNegativeButton(android.R.string.cancel,
-            DialogInterface.OnClickListener { dialog, which ->
-                //cancel the dialog & close the soft keyboard
-                dialog.cancel()
-            })
+        builder.setNegativeButton(android.R.string.cancel) { dialog, _ ->
+            //cancel the dialog & close the soft keyboard
+            dialog.cancel()
+        }
 
-        builder.setOnCancelListener { closeKeyboard() }
+        builder.setOnCancelListener { hideKeyboard() }
 
         builder.show()
     }
 
-    private fun focusEditText(et: EditText) {
-        et.requestFocus()
-        val imm = context?.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager?
-        imm?.toggleSoftInput(InputMethodManager.SHOW_FORCED, InputMethodManager.HIDE_IMPLICIT_ONLY)
-    }
-
-    private fun closeKeyboard() {
-        val imm = context?.getSystemService(Activity.INPUT_METHOD_SERVICE) as InputMethodManager?
-        imm?.toggleSoftInput(InputMethodManager.HIDE_IMPLICIT_ONLY, 0)
-    }
-
     fun addNovel(title: String, url: String) {
         Log.d(TAG, "adding new webNovel $title with url: $url")
-        webNovelsList.add( WebNovel(title, url) )
+        webNovelsList.add(WebNovel(title, url))
         novelsAdapter.notifyItemInserted(webNovelsList.size - 1)
 
         //if guide group is visible, make invisible.
@@ -232,45 +220,8 @@ class NovelsFragment : Fragment() {
         oldFolders[args.position] = args.folder
 
         //save the new data
-        saveData(oldFolders)
+        PreferencesUtils.saveFolders(activity, oldFolders)
 
-    }
-    
-    fun loadData(): MutableList<Folder> {
-
-        val sharedPreferences: SharedPreferences =
-            activity!!.getSharedPreferences("shared preferences", Context.MODE_PRIVATE)
-
-        val gson = Gson()
-
-        val emptyList = Gson().toJson(ArrayList<Folder>())
-        val json = sharedPreferences.getString("foldersList", emptyList)
-
-        val type: Type = object : TypeToken<ArrayList<Folder?>?>() {}.type
-
-        var oldFolders: MutableList<Folder> = gson.fromJson(json, type)
-
-        if (oldFolders == null) {
-
-            oldFolders = mutableListOf<Folder>()
-        }
-
-        return oldFolders
-    }
-
-    fun saveData(folders: MutableList<Folder>) {
-        val sharedPreferences: SharedPreferences =
-            activity!!.getSharedPreferences("shared preferences", Context.MODE_PRIVATE)
-
-        val editor = sharedPreferences.edit()
-
-        val gson = Gson()
-
-        val json: String = gson.toJson(folders)
-
-        editor.putString("foldersList", json)
-
-        editor.apply()
     }
 
     fun showBottomSheetDialog(position: Int) {
@@ -302,7 +253,8 @@ class NovelsFragment : Fragment() {
     }
 
     fun editNovel(position: Int) {
-        val builder = MaterialAlertDialogBuilder((activity as AppCompatActivity),
+        val builder = MaterialAlertDialogBuilder(
+            (activity as AppCompatActivity),
             R.style.AlertDialogTheme
         )
 
@@ -324,33 +276,31 @@ class NovelsFragment : Fragment() {
         builder.setView(viewInflated)
 
         //focus on EditText and open the keyboard
-        focusEditText(webNovelTitle)
+        showKeyboard(webNovelTitle)
 
         //Set click listener for webNovelUrl paste button
         urlTextLayout.setEndIconOnClickListener {
             webNovelUrl.setText(clipboardPaste())
         }
 
-        builder.setPositiveButton(android.R.string.ok,
-            DialogInterface.OnClickListener { dialog, which ->
-                dialog.dismiss()
-                closeKeyboard()
+        builder.setPositiveButton(android.R.string.ok) { dialog, _ ->
+            dialog.dismiss()
+            hideKeyboard()
 
-                //update WebNovel data in webNovelList
-                webNovelsList[position].title = webNovelTitle.text.toString()
-                webNovelsList[position].url = webNovelUrl.text.toString()
+            //update WebNovel data in webNovelList
+            webNovelsList[position].title = webNovelTitle.text.toString()
+            webNovelsList[position].url = webNovelUrl.text.toString()
 
 
-                //make RecyclerView show updated WebNovel
-                novelsAdapter.notifyItemChanged(position)
-            })
+            //make RecyclerView show updated WebNovel
+            novelsAdapter.notifyItemChanged(position)
+        }
 
-        builder.setNegativeButton(android.R.string.cancel,
-            DialogInterface.OnClickListener { dialog, which ->
-                dialog.cancel()
-            })
+        builder.setNegativeButton(android.R.string.cancel) { dialog, _ ->
+            dialog.cancel()
+        }
 
-        builder.setOnCancelListener { closeKeyboard() }
+        builder.setOnCancelListener { hideKeyboard() }
 
         builder.show()
     }
@@ -377,14 +327,18 @@ class NovelsFragment : Fragment() {
         val folderNames: MutableList<String> = getFolderNames()
 
         //Setup onClickListener for folder items.
-        val onClickListener = object: MoveNovelAdapter.OnClickListener {
+        val onClickListener = object : MoveNovelAdapter.OnClickListener {
             override fun onItemClicked(position: Int) {
                 //Move novel to desired folder
                 changeNovelFolder(novelPosition, position)
 
                 bottomSheetDialog?.dismiss()
 
-                Toast.makeText(context, "Moved novel to ${folderNames[position]}", Toast.LENGTH_SHORT).show()
+                Toast.makeText(
+                    context,
+                    "Moved novel to ${folderNames[position]}",
+                    Toast.LENGTH_SHORT
+                ).show()
             }
         }
 
