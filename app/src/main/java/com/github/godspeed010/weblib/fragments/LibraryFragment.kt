@@ -30,6 +30,7 @@ import com.github.godspeed010.weblib.hideKeyboard
 import com.github.godspeed010.weblib.showKeyboard
 import com.github.godspeed010.weblib.models.FolderColor
 import com.github.godspeed010.weblib.preferences.PreferencesUtils
+import com.google.android.material.bottomsheet.BottomSheetBehavior
 
 
 class LibraryFragment : Fragment() {
@@ -225,6 +226,9 @@ class LibraryFragment : Fragment() {
     fun showBottomSheetDialog(position: Int) {
         val bottomSheetDialog = context?.let { BottomSheetDialog(it) }
         bottomSheetDialog?.setContentView(R.layout.bottom_sheet_dialog_folder)
+
+        // Fixes bad peekHeight in Landscape Mode
+        bottomSheetDialog?.behavior?.state = BottomSheetBehavior.STATE_EXPANDED
 
         val edit = bottomSheetDialog?.findViewById<LinearLayout>(R.id.ll_edit)
         val delete = bottomSheetDialog?.findViewById<LinearLayout>(R.id.ll_delete)

@@ -30,6 +30,7 @@ import com.google.android.material.textfield.TextInputLayout
 import com.github.godspeed010.weblib.hideKeyboard
 import com.github.godspeed010.weblib.preferences.PreferencesUtils
 import com.github.godspeed010.weblib.showKeyboard
+import com.google.android.material.bottomsheet.BottomSheetBehavior
 
 
 class NovelsFragment : Fragment() {
@@ -227,6 +228,9 @@ class NovelsFragment : Fragment() {
     fun showBottomSheetDialog(position: Int) {
         val bottomSheetDialog = context?.let { BottomSheetDialog(it) }
         bottomSheetDialog?.setContentView(R.layout.bottom_sheet_dialog_novel)
+
+        // Fixes bad peekHeight in Landscape Mode
+        bottomSheetDialog?.behavior?.state = BottomSheetBehavior.STATE_EXPANDED
 
         val move = bottomSheetDialog?.findViewById<LinearLayout>(R.id.ll_move)
         val edit = bottomSheetDialog?.findViewById<LinearLayout>(R.id.ll_edit)
