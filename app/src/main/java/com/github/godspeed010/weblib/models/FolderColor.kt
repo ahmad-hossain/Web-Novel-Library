@@ -1,9 +1,11 @@
 package com.github.godspeed010.weblib.models
 
 import android.os.Parcelable
+import androidx.annotation.Keep
 import com.github.godspeed010.weblib.R
 import kotlinx.parcelize.Parcelize
 
+@Keep
 @Parcelize
 enum class FolderColor(val rgbId: Int) : Parcelable {
     VANILLA(R.color.folder_vanilla),
