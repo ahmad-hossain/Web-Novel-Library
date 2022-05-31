@@ -68,7 +68,8 @@ class NovelsFragment : Fragment() {
                 val action = NovelsFragmentDirections.actionNovelsFragmentToWebViewFragment(
                     url = webNovelsList[position].url,
                     novelPosition = position,
-                    folderPosition = args.position
+                    folderPosition = args.position,
+                    scrollY = webNovelsList[position].scroll
                 )
                 view.findNavController().navigate(action)
 

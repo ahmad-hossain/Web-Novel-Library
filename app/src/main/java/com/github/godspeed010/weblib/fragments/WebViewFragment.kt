@@ -24,15 +24,18 @@ import com.google.android.gms.ads.AdView
 import com.google.android.gms.ads.MobileAds
 import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.bottomnavigation.BottomNavigationView
-import com.google.gson.Gson
-import com.google.gson.reflect.TypeToken
-import java.lang.reflect.Type
 import kotlin.properties.Delegates
 import android.content.Intent
-import com.github.godspeed010.weblib.models.Folder
+import android.content.res.Configuration
+import android.os.Build
+import android.webkit.WebResourceRequest
+import android.webkit.WebResourceResponse
+import androidx.core.view.forEach
+import androidx.core.view.forEachIndexed
 import com.github.godspeed010.weblib.R
 import com.github.godspeed010.weblib.hideKeyboard
 import com.github.godspeed010.weblib.preferences.PreferencesUtils
+import java.util.*
 
 
 class WebViewFragment : Fragment() {
@@ -43,10 +46,12 @@ class WebViewFragment : Fragment() {
     lateinit var webViewToolbar: Toolbar
     lateinit var bottomNav: BottomNavigationView
     lateinit var navHostFragment: NavHostFragment
-    lateinit var lastVisitedUrl: String
     lateinit var mAdView: AdView
     lateinit var webView: WebView
+    lateinit var lastVisitedUrl: String
+    lateinit var timer: Timer
 
+    var lastScroll by Delegates.notNull<Int>()
     var novelPosition by Delegates.notNull<Int>()
     var folderPosition by Delegates.notNull<Int>()
 
@@ -60,8 +65,8 @@ class WebViewFragment : Fragment() {
         novelPosition = WebViewFragmentArgs.fromBundle(requireArguments()).novelPosition
         folderPosition = WebViewFragmentArgs.fromBundle(requireArguments()).folderPosition
 
-        //set lastVisitedUrl to original url. Prevents crashing if user returns from WebView before it's loaded
         lastVisitedUrl = url
+        lastScroll = WebViewFragmentArgs.fromBundle(requireArguments()).scrollY
 
         setHasOptionsMenu(true)
 
@@ -82,6 +87,7 @@ class WebViewFragment : Fragment() {
         webView.loadUrl(url)
 
         val mWebViewClient: WebViewClient = object : WebViewClient() {
+            private var pageError = false
             //called every time URL changes
             override fun doUpdateVisitedHistory(wv: WebView?, url: String?, isReload: Boolean) {
                 super.doUpdateVisitedHistory(wv, url, isReload)
@@ -93,9 +99,30 @@ class WebViewFragment : Fragment() {
                     view.findViewById<EditText>(R.id.et_address_bar).setText(url)
 
                     if (url != null) {
+                        lastScroll = 0
                         lastVisitedUrl = url
                     }
                 }
+            }
+
+            override fun onReceivedHttpError(wv: WebView?, request: WebResourceRequest?, errorResponse: WebResourceResponse?) {
+                super.onReceivedHttpError(wv, request, errorResponse)
+
+                pageError = true
+            }
+
+            override fun onPageFinished(wv: WebView?, url: String?) {
+                super.onPageFinished(wv, url)
+
+                if (url == WebViewFragmentArgs.fromBundle(requireArguments()).url && !pageError) {
+                    wv!!.scrollTo(0, WebViewFragmentArgs.fromBundle(requireArguments()).scrollY)
+                }
+            }
+        }
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            webView.setOnScrollChangeListener { view, _, _, _, _ ->
+                lastScroll = view.scrollY
             }
         }
 
@@ -140,11 +167,28 @@ class WebViewFragment : Fragment() {
         val adRequest = AdRequest.Builder().build()
         mAdView.loadAd(adRequest)
 
+        timer = Timer("AutoSave")
+        timer.scheduleAtFixedRate(object : TimerTask() {
+            override fun run() {
+                overwriteSave(lastVisitedUrl, lastScroll)
+            }
+        }, 30000, 30000)
+
         return view
     }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
         inflater.inflate(R.menu.menu_toolbar_webview, menu)
+        if (WebViewFeature.isFeatureSupported(WebViewFeature.FORCE_DARK)) {
+            if ((Build.VERSION.SDK_INT >= Build.VERSION_CODES.R && resources.configuration.isNightModeActive) ||
+                (resources.configuration.uiMode.and(Configuration.UI_MODE_NIGHT_MASK)) == Configuration.UI_MODE_NIGHT_YES
+            ) {
+                menu.findItem(R.id.dark_mode).isChecked = true
+                WebSettingsCompat.setForceDark(webView.settings, WebSettingsCompat.FORCE_DARK_ON)
+            }
+        } else {
+            menu.findItem(R.id.dark_mode).isVisible = false
+        }
         return super.onCreateOptionsMenu(menu, inflater)
     }
 
@@ -156,6 +200,12 @@ class WebViewFragment : Fragment() {
         }
 
         return super.onOptionsItemSelected(item)
+    }
+
+    override fun onStop() {
+        super.onStop()
+
+        timer.cancel()
     }
 
     private fun shareUrl(url: String?) {
@@ -213,17 +263,12 @@ class WebViewFragment : Fragment() {
         bottomNav.visibility = visibility
     }
 
-    override fun onStop() {
-        super.onStop()
-
-        overwriteSave()
-    }
-
-    fun overwriteSave() {
+    fun overwriteSave(url: String, scrollY: Int) {
         val folders = PreferencesUtils.loadFolders(activity)
 
         //update the url for the novel
-        folders[folderPosition].webNovels[novelPosition].url = lastVisitedUrl.toString()
+        folders[folderPosition].webNovels[novelPosition].url = url
+        folders[folderPosition].webNovels[novelPosition].scroll = scrollY
 
         //save the updated data
         PreferencesUtils.saveFolders(activity, folders)

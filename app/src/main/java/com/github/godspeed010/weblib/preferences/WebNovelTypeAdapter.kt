@@ -8,19 +8,24 @@ import com.github.godspeed010.weblib.models.WebNovel
 
 class WebNovelTypeAdapter: TypeAdapter<WebNovel>() {
     override fun write(writer: JsonWriter, value: WebNovel?) {
+        if(value == null) return;
+
         writer.beginObject()
 
         writer.name("title")
-        writer.value(value?.title)
+        writer.value(value.title)
 
         writer.name("url")
-        writer.value(value?.url)
+        writer.value(value.url)
+
+        writer.name("scroll")
+        writer.value(value.scroll)
 
         writer.endObject()
     }
 
     override fun read(reader: JsonReader): WebNovel {
-        var novel: WebNovel = WebNovel()
+        var novel = WebNovel()
 
         if(reader.peek() == JsonToken.NULL)
         {
@@ -31,11 +36,11 @@ class WebNovelTypeAdapter: TypeAdapter<WebNovel>() {
         reader.beginObject()
 
         while(reader.hasNext()) {
-            val name = reader.nextName()
-            when(name)
+            when(reader.nextName())
             {
                 "title" -> novel.title = reader.nextString()
                 "url" -> novel.url = reader.nextString()
+                "scroll" -> novel.scroll = reader.nextInt()
             }
         }
 

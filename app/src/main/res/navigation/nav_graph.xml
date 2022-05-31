@@ -40,6 +40,9 @@
         <argument
             android:name="novelPosition"
             app:argType="integer" />
+        <argument
+            android:name="scrollY"
+            app:argType="integer" />
 
     </fragment>
     <fragment
