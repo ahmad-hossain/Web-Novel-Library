@@ -17,9 +17,8 @@ import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.github.godspeed010.weblib.*
 import com.github.godspeed010.weblib.models.Folder
-import com.github.godspeed010.weblib.R
-import com.github.godspeed010.weblib.ReorderHelperCallback
 import com.github.godspeed010.weblib.models.WebNovel
 import com.github.godspeed010.weblib.adapters.MoveNovelAdapter
 import com.github.godspeed010.weblib.adapters.NovelsAdapter
@@ -27,9 +26,7 @@ import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.textfield.TextInputEditText
 import com.google.android.material.textfield.TextInputLayout
-import com.github.godspeed010.weblib.hideKeyboard
 import com.github.godspeed010.weblib.preferences.PreferencesUtils
-import com.github.godspeed010.weblib.showKeyboard
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 
 
@@ -168,7 +165,7 @@ class NovelsFragment : Fragment() {
         builder.setView(viewInflated)
 
         //focus on webNovelTitle EditText when Dialog is opened and open keyboard
-        showKeyboard(webNovelTitle)
+        webNovelTitle.focusAndShowKeyboard()
 
         //Set click listener for webNovelUrl paste button
         urlTextLayout.setEndIconOnClickListener {
@@ -281,7 +278,7 @@ class NovelsFragment : Fragment() {
         builder.setView(viewInflated)
 
         //focus on EditText and open the keyboard
-        showKeyboard(webNovelTitle)
+        webNovelTitle.focusAndShowKeyboard()
 
         //Set click listener for webNovelUrl paste button
         urlTextLayout.setEndIconOnClickListener {

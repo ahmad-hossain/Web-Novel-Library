@@ -1,36 +1,33 @@
 package com.github.godspeed010.weblib.fragments
 
 import android.content.res.ColorStateList
+import android.graphics.Rect
 import android.os.Bundle
 import android.util.Log
 import android.view.*
-import android.view.LayoutInflater
-import androidx.fragment.app.Fragment
-import androidx.navigation.findNavController
-import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
-import com.google.android.material.textfield.TextInputEditText
-
-import android.graphics.Rect
-
-import androidx.appcompat.app.AppCompatActivity
-import androidx.recyclerview.widget.ItemTouchHelper
-import com.google.android.material.bottomsheet.BottomSheetDialog
-import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import android.view.inputmethod.EditorInfo
 import android.widget.*
 import androidx.appcompat.app.AlertDialog
+import androidx.appcompat.app.AppCompatActivity
 import androidx.constraintlayout.widget.Group
 import androidx.core.content.ContextCompat
-import com.github.godspeed010.weblib.models.Folder
+import androidx.fragment.app.Fragment
+import androidx.navigation.findNavController
+import androidx.recyclerview.widget.ItemTouchHelper
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.github.godspeed010.weblib.R
 import com.github.godspeed010.weblib.ReorderHelperCallback
 import com.github.godspeed010.weblib.adapters.FolderAdapter
+import com.github.godspeed010.weblib.focusAndShowKeyboard
 import com.github.godspeed010.weblib.hideKeyboard
-import com.github.godspeed010.weblib.showKeyboard
+import com.github.godspeed010.weblib.models.Folder
 import com.github.godspeed010.weblib.models.FolderColor
 import com.github.godspeed010.weblib.preferences.PreferencesUtils
 import com.google.android.material.bottomsheet.BottomSheetBehavior
+import com.google.android.material.bottomsheet.BottomSheetDialog
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.google.android.material.textfield.TextInputEditText
 
 
 class LibraryFragment : Fragment() {
@@ -156,7 +153,7 @@ class LibraryFragment : Fragment() {
         builder.setView(viewInflated)
 
         //focus on folder-name EditText when Dialog is opened and open keyboard
-        showKeyboard(input)
+        input.focusAndShowKeyboard()
 
         builder.setPositiveButton(android.R.string.ok) { dialog, _ ->
             dialog.dismiss()
@@ -284,7 +281,7 @@ class LibraryFragment : Fragment() {
         folderName.setText(folders[position].name)
 
         //focus on folder-name EditText when Dialog is opened and open keyboard
-        showKeyboard(folderName)
+        folderName.focusAndShowKeyboard()
 
         // Specify the type of input expected
         builder.setView(viewInflated)

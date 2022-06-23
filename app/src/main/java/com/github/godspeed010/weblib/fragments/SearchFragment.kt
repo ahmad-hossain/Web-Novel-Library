@@ -17,9 +17,9 @@ import androidx.core.content.ContextCompat.getSystemService
 import com.github.godspeed010.weblib.R
 import com.github.godspeed010.weblib.models.WebNovel
 import com.github.godspeed010.weblib.adapters.NovelsAdapter
+import com.github.godspeed010.weblib.focusAndShowKeyboard
 import com.github.godspeed010.weblib.hideKeyboard
 import com.github.godspeed010.weblib.preferences.PreferencesUtils
-import com.github.godspeed010.weblib.showKeyboard
 
 
 class SearchFragment : Fragment() {
@@ -40,7 +40,7 @@ class SearchFragment : Fragment() {
         val searchEditText = view.findViewById<EditText>(R.id.et_search)
 
         //focus on and open keyboard for EditText as soon as Fragment is opened
-        showKeyboard(searchEditText)
+        searchEditText.focusAndShowKeyboard()
         searchEditText.addTextChangedListener(object : TextWatcher {
 
             override fun onTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {
