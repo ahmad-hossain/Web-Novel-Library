@@ -57,6 +57,7 @@ class FolderTypeAdapter: TypeAdapter<Folder>() {
 
                         reader.endArray()
                     }
+                    else -> reader.skipValue()
                 }
             } catch(err: Error) {}
         }

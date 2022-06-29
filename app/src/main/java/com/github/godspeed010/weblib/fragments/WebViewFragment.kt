@@ -1,12 +1,9 @@
 package com.github.godspeed010.weblib.fragments
 
-import android.content.Context
-import android.content.SharedPreferences
 import android.os.Bundle
 import android.util.Log
 import android.util.Patterns
 import android.view.*
-import android.view.inputmethod.InputMethodManager
 import androidx.fragment.app.Fragment
 import android.webkit.WebView
 import android.webkit.WebViewClient
@@ -30,17 +27,18 @@ import android.content.res.Configuration
 import android.os.Build
 import android.webkit.WebResourceRequest
 import android.webkit.WebResourceResponse
-import androidx.core.view.forEach
-import androidx.core.view.forEachIndexed
+import android.widget.Toast
 import com.github.godspeed010.weblib.R
 import com.github.godspeed010.weblib.hideKeyboard
+import com.github.godspeed010.weblib.models.WebNovel
 import com.github.godspeed010.weblib.preferences.PreferencesUtils
+import java.text.NumberFormat
 import java.util.*
-
 
 class WebViewFragment : Fragment() {
 
     private val TAG = "WebViewFragment"
+    private var timer: Timer? = null
 
     lateinit var mainToolbar: MaterialToolbar
     lateinit var webViewToolbar: Toolbar
@@ -49,11 +47,12 @@ class WebViewFragment : Fragment() {
     lateinit var mAdView: AdView
     lateinit var webView: WebView
     lateinit var lastVisitedUrl: String
-    lateinit var timer: Timer
+    lateinit var lastPageTitle: String
 
-    var lastScroll by Delegates.notNull<Int>()
+    var lastProgression by Delegates.notNull<Float>()
     var novelPosition by Delegates.notNull<Int>()
     var folderPosition by Delegates.notNull<Int>()
+    var pageError by Delegates.notNull<Boolean>()
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         // Inflate the layout for this fragment
@@ -61,12 +60,16 @@ class WebViewFragment : Fragment() {
 
         navHostFragment = (activity as AppCompatActivity).supportFragmentManager.findFragmentById(R.id.nav_host_fragment) as NavHostFragment
 
-        val url: String = WebViewFragmentArgs.fromBundle(requireArguments()).url
+        val novel: WebNovel = WebViewFragmentArgs.fromBundle(requireArguments()).novel
         novelPosition = WebViewFragmentArgs.fromBundle(requireArguments()).novelPosition
         folderPosition = WebViewFragmentArgs.fromBundle(requireArguments()).folderPosition
 
-        lastVisitedUrl = url
-        lastScroll = WebViewFragmentArgs.fromBundle(requireArguments()).scrollY
+        // set lastVisitedUrl and lastScroll to their original values.
+        // Prevents crashing if user returns from WebView before it's loaded
+        lastVisitedUrl = novel.url
+        lastProgression = novel.progression
+
+        Log.d(TAG, "density=${resources.displayMetrics.density}, densityDpi=${resources.displayMetrics.densityDpi}")
 
         setHasOptionsMenu(true)
 
@@ -84,10 +87,9 @@ class WebViewFragment : Fragment() {
 
         webView.settings.javaScriptEnabled = true
 
-        webView.loadUrl(url)
+        webView.loadUrl(novel.url)
 
         val mWebViewClient: WebViewClient = object : WebViewClient() {
-            private var pageError = false
             //called every time URL changes
             override fun doUpdateVisitedHistory(wv: WebView?, url: String?, isReload: Boolean) {
                 super.doUpdateVisitedHistory(wv, url, isReload)
@@ -99,7 +101,8 @@ class WebViewFragment : Fragment() {
                     view.findViewById<EditText>(R.id.et_address_bar).setText(url)
 
                     if (url != null) {
-                        lastScroll = 0
+                        pageError = false
+                        lastProgression = 0f
                         lastVisitedUrl = url
                     }
                 }
@@ -108,21 +111,49 @@ class WebViewFragment : Fragment() {
             override fun onReceivedHttpError(wv: WebView?, request: WebResourceRequest?, errorResponse: WebResourceResponse?) {
                 super.onReceivedHttpError(wv, request, errorResponse)
 
-                pageError = true
+                if (request?.url.toString() == wv?.url) pageError = true
             }
 
-            override fun onPageFinished(wv: WebView?, url: String?) {
-                super.onPageFinished(wv, url)
+            override fun onPageFinished(wv: WebView?, loadedUrl: String?) {
+                super.onPageFinished(wv, loadedUrl)
 
-                if (url == WebViewFragmentArgs.fromBundle(requireArguments()).url && !pageError) {
-                    wv!!.scrollTo(0, WebViewFragmentArgs.fromBundle(requireArguments()).scrollY)
+                if ((loadedUrl == novel.url) && !pageError) {
+                    if (novel.progression != 0f) {
+                        val toast: Toast = Toast.makeText(context, "Please wait for page to scroll.", Toast.LENGTH_LONG)
+                        toast.show()
+                        wv?.postDelayed({
+                            val scrollY: Int = calculateScrollYFromProgression(novel.progression, wv)
+                            val progressionPct: String = NumberFormat.getPercentInstance().let {
+                                it.minimumFractionDigits = 1
+                                it.format(novel.progression)
+                            }
+                            Log.d(
+                                TAG,
+                                "Page finished loading, scrolling to $scrollY ($progressionPct)"
+                            )
+                            wv.scrollTo(0, scrollY)
+                            toast.cancel()
+                        }, 2000)
+                    }
                 }
+
+                lastPageTitle = wv?.title ?: loadedUrl!!
             }
         }
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             webView.setOnScrollChangeListener { view, _, _, _, _ ->
-                lastScroll = view.scrollY
+                if (!pageError) {
+                    lastProgression = calculateProgression(webView)
+                    val progressionPct: String = NumberFormat.getPercentInstance().let {
+                        it.minimumFractionDigits = 1
+                        it.format(lastProgression)
+                    }
+                    Log.v(
+                        TAG,
+                        "Page progression is now $progressionPct"
+                    )
+                }
             }
         }
 
@@ -167,26 +198,20 @@ class WebViewFragment : Fragment() {
         val adRequest = AdRequest.Builder().build()
         mAdView.loadAd(adRequest)
 
-        timer = Timer("AutoSave")
-        timer.scheduleAtFixedRate(object : TimerTask() {
-            override fun run() {
-                overwriteSave(lastVisitedUrl, lastScroll)
-            }
-        }, 30000, 30000)
-
         return view
     }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
         inflater.inflate(R.menu.menu_toolbar_webview, menu)
         if (WebViewFeature.isFeatureSupported(WebViewFeature.FORCE_DARK)) {
+            // Automatically turn on dark mode if night mode on the device is active.
             if ((Build.VERSION.SDK_INT >= Build.VERSION_CODES.R && resources.configuration.isNightModeActive) ||
                 (resources.configuration.uiMode.and(Configuration.UI_MODE_NIGHT_MASK)) == Configuration.UI_MODE_NIGHT_YES
             ) {
                 menu.findItem(R.id.dark_mode).isChecked = true
                 WebSettingsCompat.setForceDark(webView.settings, WebSettingsCompat.FORCE_DARK_ON)
             }
-        } else {
+        } else { // If forcing dark mode is not supported by the web view, hide the option to enable dark mode.
             menu.findItem(R.id.dark_mode).isVisible = false
         }
         return super.onCreateOptionsMenu(menu, inflater)
@@ -202,17 +227,41 @@ class WebViewFragment : Fragment() {
         return super.onOptionsItemSelected(item)
     }
 
-    override fun onStop() {
-        super.onStop()
-
-        timer.cancel()
-    }
-
     private fun shareUrl(url: String?) {
         val shareIntent = Intent(Intent.ACTION_SEND)
         shareIntent.type = "text/plain"
         shareIntent.putExtra(Intent.EXTRA_TEXT, url)
         startActivity(Intent.createChooser(shareIntent, "Share This Website!"))
+    }
+
+    override fun onPause() {
+        super.onPause()
+
+        overwriteSave()
+
+        stopTimer()
+    }
+
+    override fun onResume() {
+        super.onResume()
+
+        startTimer()
+    }
+
+    private fun startTimer() {
+        if (timer != null) return
+        timer = Timer("AutoSave")
+        timer!!.scheduleAtFixedRate(object : TimerTask() {
+            override fun run() {
+                overwriteSave()
+            }
+        }, 30000, 30000)
+    }
+
+    private fun stopTimer() {
+        if (timer == null) return
+        timer!!.cancel()
+        timer = null
     }
 
     private fun toggleDarkMode(item: MenuItem) {
@@ -263,14 +312,24 @@ class WebViewFragment : Fragment() {
         bottomNav.visibility = visibility
     }
 
-    fun overwriteSave(url: String, scrollY: Int) {
+    fun overwriteSave() {
         val folders = PreferencesUtils.loadFolders(activity)
 
         //update the url for the novel
-        folders[folderPosition].webNovels[novelPosition].url = url
-        folders[folderPosition].webNovels[novelPosition].scroll = scrollY
+        folders[folderPosition].webNovels[novelPosition].url = lastVisitedUrl
+        folders[folderPosition].webNovels[novelPosition].progression = lastProgression
 
         //save the updated data
         PreferencesUtils.saveFolders(activity, folders)
+        Log.d(TAG, "Web Novel saved!")
+    }
+
+    private fun calculateProgression(wv: WebView): Float {
+        // The 200 subtracted is to bring a little bit above where a user stopped so they can determine where they were again.
+        return ((wv.scrollY - wv.top - 200).toFloat() / resources.displayMetrics.density) / wv.contentHeight
+    }
+
+    private fun calculateScrollYFromProgression(progression: Float, wv: WebView): Int {
+        return ((progression * wv.contentHeight) * resources.displayMetrics.density).toInt() + wv.top
     }
 }

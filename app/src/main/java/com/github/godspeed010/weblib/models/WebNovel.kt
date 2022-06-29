@@ -9,5 +9,5 @@ import kotlinx.android.parcel.Parcelize
 data class WebNovel (
     var title: String = "",
     var url: String = "",
-    var scroll: Int = 0
-    ): Parcelable
+    var progression: Float = 0f
+): Parcelable

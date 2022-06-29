@@ -211,12 +211,11 @@ class LibraryFragment : Fragment() {
         setGuideVisibility()
     }
 
-    override fun onStop() {
-        super.onStop()
+    override fun onPause() {
+        super.onPause()
 
         PreferencesUtils.saveFolders(activity, folders)
 
-        Log.d(TAG, "stopping")
         Log.d(TAG, "there are ${folders.size} folders ")
     }
 

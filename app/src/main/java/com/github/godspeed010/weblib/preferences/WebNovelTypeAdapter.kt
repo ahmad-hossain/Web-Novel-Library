@@ -18,8 +18,8 @@ class WebNovelTypeAdapter: TypeAdapter<WebNovel>() {
         writer.name("url")
         writer.value(value.url)
 
-        writer.name("scroll")
-        writer.value(value.scroll)
+        writer.name("progression")
+        writer.value(value.progression.toDouble())
 
         writer.endObject()
     }
@@ -40,7 +40,8 @@ class WebNovelTypeAdapter: TypeAdapter<WebNovel>() {
             {
                 "title" -> novel.title = reader.nextString()
                 "url" -> novel.url = reader.nextString()
-                "scroll" -> novel.scroll = reader.nextInt()
+                "progression" -> novel.progression = reader.nextDouble().toFloat()
+                else -> reader.skipValue()
             }
         }
 

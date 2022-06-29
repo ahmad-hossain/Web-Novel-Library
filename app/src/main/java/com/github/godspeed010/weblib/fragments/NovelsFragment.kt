@@ -63,10 +63,9 @@ class NovelsFragment : Fragment() {
                 Log.d(TAG, "onItemClicked: clicked item $position")
 
                 val action = NovelsFragmentDirections.actionNovelsFragmentToWebViewFragment(
-                    url = webNovelsList[position].url,
+                    novel = webNovelsList[position],
                     novelPosition = position,
-                    folderPosition = args.position,
-                    scrollY = webNovelsList[position].scroll
+                    folderPosition = args.position
                 )
                 view.findNavController().navigate(action)
 
@@ -205,12 +204,12 @@ class NovelsFragment : Fragment() {
         setGuideVisibility()
     }
 
-    override fun onStop() {
-        super.onStop()
+    override fun onPause() {
+        super.onPause()
 
-        Log.d(TAG, "onStop: previous novels num: ${args.folder.webNovels.size}")
+        Log.d(TAG, "onPause: previous novels num: ${args.folder.webNovels.size}")
         args.folder.webNovels = webNovelsList
-        Log.d(TAG, "onStop: new novels num: ${args.folder.webNovels.size}")
+        Log.d(TAG, "onPause: new novels num: ${args.folder.webNovels.size}")
 
         //load the old folders data
         val oldFolders = folderList
