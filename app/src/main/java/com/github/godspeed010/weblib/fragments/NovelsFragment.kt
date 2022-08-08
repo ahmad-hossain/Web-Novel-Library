@@ -204,8 +204,8 @@ class NovelsFragment : Fragment() {
         setGuideVisibility()
     }
 
-    override fun onPause() {
-        super.onPause()
+    override fun onStop() {
+        super.onStop()
 
         Log.d(TAG, "onPause: previous novels num: ${args.folder.webNovels.size}")
         args.folder.webNovels = webNovelsList
