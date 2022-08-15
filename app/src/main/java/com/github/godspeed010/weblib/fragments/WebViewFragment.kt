@@ -36,7 +36,6 @@ import kotlin.properties.Delegates
 
 class WebViewFragment : Fragment() {
 
-    private var timer: Timer? = null
     private val TAG = "WebViewFragment"
 
     lateinit var mainToolbar: MaterialToolbar
@@ -138,8 +137,6 @@ class WebViewFragment : Fragment() {
             webView.setOnScrollChangeListener { view, _, _, _, _ ->
                 updateProgression()
             }
-        } else {
-            startTimer()
         }
 
         webView.webViewClient = mWebViewClient
@@ -254,44 +251,6 @@ class WebViewFragment : Fragment() {
         shareIntent.type = "text/plain"
         shareIntent.putExtra(Intent.EXTRA_TEXT, url)
         startActivity(Intent.createChooser(shareIntent, "Share This Website!"))
-    }
-
-    private fun startTimer() {
-        if (timer != null) return
-
-        Log.d(TAG, "Starting timer for tracking progression")
-
-        timer = Timer()
-        timer!!.scheduleAtFixedRate(object : TimerTask() {
-            override fun run() {
-                requireActivity().runOnUiThread { updateProgression() }
-            }
-        }, 10000, 10000)
-    }
-
-    private fun stopTimer() {
-        if (timer == null) return
-
-        Log.d(TAG, "Stopping timer for tracking progression")
-
-        timer!!.cancel()
-        timer = null
-    }
-
-    override fun onPause() {
-        super.onPause()
-
-        if (timer != null) updateProgression()
-
-        stopTimer()
-    }
-
-    override fun onResume() {
-        super.onResume()
-
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
-            startTimer()
-        }
     }
 
     override fun onStop() {
