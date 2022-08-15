@@ -20,6 +20,7 @@ import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.setupWithNavController
 import androidx.webkit.WebSettingsCompat
 import androidx.webkit.WebViewFeature
+import com.github.godspeed010.weblib.MainActivity
 import com.github.godspeed010.weblib.R
 import com.github.godspeed010.weblib.hideKeyboard
 import com.github.godspeed010.weblib.models.WebNovel
@@ -30,10 +31,12 @@ import com.google.android.gms.ads.MobileAds
 import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import java.text.NumberFormat
+import java.util.*
 import kotlin.properties.Delegates
 
 class WebViewFragment : Fragment() {
 
+    private var timer: Timer? = null
     private val TAG = "WebViewFragment"
 
     lateinit var mainToolbar: MaterialToolbar
@@ -86,12 +89,13 @@ class WebViewFragment : Fragment() {
         //setup toolbar with nav to enable using UP button
         setupToolbarWithNav(webViewToolbar)
 
+        pageError = false
 
         webView = view.findViewById(R.id.webview)
 
         webView.settings.javaScriptEnabled = true
 
-        webView.loadUrl(novel.url)
+        webView.loadUrl(lastVisitedUrl)
 
         val mWebViewClient: WebViewClient = object : WebViewClient() {
             //called every time URL changes
@@ -104,7 +108,7 @@ class WebViewFragment : Fragment() {
                     //Update address bar
                     view.findViewById<EditText>(R.id.et_address_bar).setText(url)
 
-                    if (url != null) {
+                    if (url != null && lastVisitedUrl != url) {
                         pageError = false
                         lastProgression = 0f
                         lastVisitedUrl = url
@@ -121,8 +125,8 @@ class WebViewFragment : Fragment() {
             override fun onPageFinished(wv: WebView?, loadedUrl: String?) {
                 super.onPageFinished(wv, loadedUrl)
 
-                if ((loadedUrl == novel.url) && !pageError && novel.progression != 0f) {
-                    scrollWebView(novel.progression, wv)
+                if ((loadedUrl == novel.url) && !pageError && lastProgression != 0f) {
+                    scrollWebView(lastProgression, wv)
                 } else {
                     val progressBar = requireView().findViewById<View>(R.id.progressView)
                     progressBar.visibility = View.GONE
@@ -132,18 +136,10 @@ class WebViewFragment : Fragment() {
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             webView.setOnScrollChangeListener { view, _, _, _, _ ->
-                if (!pageError) {
-                    lastProgression = calculateProgression(webView)
-                    val progressionPct: String = NumberFormat.getPercentInstance().let {
-                        it.minimumFractionDigits = 1
-                        it.format(lastProgression)
-                    }
-                    Log.v(
-                        TAG,
-                        "Page progression is now $progressionPct"
-                    )
-                }
+                updateProgression()
             }
+        } else {
+            startTimer()
         }
 
         webView.webViewClient = mWebViewClient
@@ -188,6 +184,20 @@ class WebViewFragment : Fragment() {
         mAdView.loadAd(adRequest)
 
         return view
+    }
+
+    private fun updateProgression() {
+        if (!pageError) {
+            lastProgression = calculateProgression(webView)
+            val progressionPct: String = NumberFormat.getPercentInstance().let {
+                it.minimumFractionDigits = 1
+                it.format(lastProgression)
+            }
+            Log.v(
+                TAG,
+                "Page progression is now $progressionPct"
+            )
+        }
     }
 
     private fun scrollWebView(progression: Float, wv: WebView?) {
@@ -244,6 +254,44 @@ class WebViewFragment : Fragment() {
         shareIntent.type = "text/plain"
         shareIntent.putExtra(Intent.EXTRA_TEXT, url)
         startActivity(Intent.createChooser(shareIntent, "Share This Website!"))
+    }
+
+    private fun startTimer() {
+        if (timer != null) return
+
+        Log.d(TAG, "Starting timer for tracking progression")
+
+        timer = Timer()
+        timer!!.scheduleAtFixedRate(object : TimerTask() {
+            override fun run() {
+                requireActivity().runOnUiThread { updateProgression() }
+            }
+        }, 10000, 10000)
+    }
+
+    private fun stopTimer() {
+        if (timer == null) return
+
+        Log.d(TAG, "Stopping timer for tracking progression")
+
+        timer!!.cancel()
+        timer = null
+    }
+
+    override fun onPause() {
+        super.onPause()
+
+        if (timer != null) updateProgression()
+
+        stopTimer()
+    }
+
+    override fun onResume() {
+        super.onResume()
+
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
+            startTimer()
+        }
     }
 
     override fun onStop() {
@@ -322,7 +370,6 @@ class WebViewFragment : Fragment() {
     }
 
     private fun calculateProgression(wv: WebView): Float {
-        // The 200 subtracted is to bring a little bit above where a user stopped so they can determine where they were again.
         return (((wv.scrollY - wv.top - 200).toFloat() / resources.displayMetrics.density) / wv.contentHeight).coerceAtLeast(0f)
     }
 
