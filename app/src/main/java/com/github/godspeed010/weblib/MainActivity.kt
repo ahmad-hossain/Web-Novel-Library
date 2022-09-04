@@ -44,6 +44,9 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun setupUi() {
+        val navHostFragment = supportFragmentManager.findFragmentById(R.id.nav_host_fragment) as NavHostFragment
+        _navController = navHostFragment.navController
+
         setSupportActionBar(_binding.toolbar)
 
         //setup toolbar with nav to enable using UP button
@@ -60,8 +63,6 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun setupToolbarWithNav() {
-        val navHostFragment = supportFragmentManager.findFragmentById(R.id.nav_host_fragment) as NavHostFragment
-        _navController = navHostFragment.navController
         val builder = AppBarConfiguration.Builder(_navController.graph)
         val appBarConfiguration = builder.build()
         _binding.toolbar.setupWithNavController(_navController, appBarConfiguration)
