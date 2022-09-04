@@ -1,5 +1,6 @@
 package com.github.godspeed010.weblib.fragments
 
+import android.annotation.SuppressLint
 import android.content.Intent
 import android.content.res.Configuration
 import android.os.Build
@@ -7,10 +8,7 @@ import android.os.Bundle
 import android.util.Log
 import android.util.Patterns
 import android.view.*
-import android.webkit.WebResourceRequest
-import android.webkit.WebResourceResponse
-import android.webkit.WebView
-import android.webkit.WebViewClient
+import android.webkit.*
 import android.widget.EditText
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
@@ -20,7 +18,6 @@ import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.setupWithNavController
 import androidx.webkit.WebSettingsCompat
 import androidx.webkit.WebViewFeature
-import com.github.godspeed010.weblib.MainActivity
 import com.github.godspeed010.weblib.R
 import com.github.godspeed010.weblib.hideKeyboard
 import com.github.godspeed010.weblib.models.WebNovel
@@ -31,12 +28,16 @@ import com.google.android.gms.ads.MobileAds
 import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import java.text.NumberFormat
-import java.util.*
 import kotlin.properties.Delegates
+
+private const val STATE_PROGRESSION = "novelProgression"
+private const val STATE_URL = "novelUrl"
 
 class WebViewFragment : Fragment() {
 
     private val TAG = "WebViewFragment"
+
+    private var pageError = false
 
     lateinit var mainToolbar: MaterialToolbar
     lateinit var webViewToolbar: Toolbar
@@ -49,8 +50,8 @@ class WebViewFragment : Fragment() {
     var lastProgression by Delegates.notNull<Float>()
     var novelPosition by Delegates.notNull<Int>()
     var folderPosition by Delegates.notNull<Int>()
-    var pageError by Delegates.notNull<Boolean>()
 
+    @SuppressLint("SetJavaScriptEnabled")
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         // Inflate the layout for this fragment
         val view = inflater.inflate(R.layout.fragment_web_view, container, false)
@@ -88,8 +89,6 @@ class WebViewFragment : Fragment() {
         //setup toolbar with nav to enable using UP button
         setupToolbarWithNav(webViewToolbar)
 
-        pageError = false
-
         webView = view.findViewById(R.id.webview)
 
         webView.settings.javaScriptEnabled = true
@@ -103,22 +102,24 @@ class WebViewFragment : Fragment() {
 
                 Log.d(TAG, "URL CHANGE to $url")
 
-                if (view != null) {
-                    //Update address bar
-                    view.findViewById<EditText>(R.id.et_address_bar).setText(url)
+                //Update address bar
+                requireView().findViewById<EditText>(R.id.et_address_bar).setText(url)
+                pageError = false
 
-                    if (url != null && lastVisitedUrl != url) {
-                        pageError = false
-                        lastProgression = 0f
-                        lastVisitedUrl = url
-                    }
+                if (url != null && lastVisitedUrl != url) {
+                    lastProgression = 0f
+                    lastVisitedUrl = url
                 }
             }
 
-            override fun onReceivedHttpError(wv: WebView?, request: WebResourceRequest?, errorResponse: WebResourceResponse?) {
-                super.onReceivedHttpError(wv, request, errorResponse)
+            override fun onReceivedError(wv: WebView?, request: WebResourceRequest?, error: WebResourceError?) {
+                super.onReceivedError(wv, request, error)
 
-                if (request?.url.toString() == wv?.url) pageError = true
+                if (request?.url.toString() == wv?.url)
+                {
+                    Log.d(TAG, "An error occurred while loading page, disabling scroll.")
+                    pageError = true
+                }
             }
 
             override fun onPageFinished(wv: WebView?, loadedUrl: String?) {
@@ -127,14 +128,17 @@ class WebViewFragment : Fragment() {
                 if ((loadedUrl == novel.url) && !pageError && lastProgression != 0f) {
                     scrollWebView(lastProgression, wv)
                 } else {
-                    val progressBar = requireView().findViewById<View>(R.id.progressView)
-                    progressBar.visibility = View.GONE
+                    view.apply {
+                        val progressBar = findViewById<View>(R.id.progressView)
+                        progressBar.visibility = View.GONE
+                    }
                 }
             }
         }
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            webView.setOnScrollChangeListener { view, _, _, _, _ ->
+            webView.setOnScrollChangeListener { _, _, _, _, _ ->
+                if(pageError) return@setOnScrollChangeListener
                 updateProgression()
             }
         }
@@ -142,7 +146,7 @@ class WebViewFragment : Fragment() {
         webView.webViewClient = mWebViewClient
 
         //enable using back button to go to prev. webpage. Returns to prev. Frag. if can't go back anymore
-        webView.setOnKeyListener { view, i, keyEvent ->
+        webView.setOnKeyListener { _, _, keyEvent ->
             if (keyEvent.keyCode == KeyEvent.KEYCODE_BACK && webView.canGoBack()) {
                 webView.goBack() // Navigate back to previous web page if there is one
                 return@setOnKeyListener true
@@ -174,7 +178,7 @@ class WebViewFragment : Fragment() {
                 true
             }
 
-        MobileAds.initialize(activity)
+        MobileAds.initialize(activity as AppCompatActivity)
 
         mAdView = view.findViewById(R.id.adView)
         val adRequest = AdRequest.Builder().build()
@@ -184,17 +188,19 @@ class WebViewFragment : Fragment() {
     }
 
     private fun updateProgression() {
-        if (!pageError) {
-            lastProgression = calculateProgression(webView)
-            val progressionPct: String = NumberFormat.getPercentInstance().let {
-                it.minimumFractionDigits = 1
-                it.format(lastProgression)
-            }
-            Log.v(
-                TAG,
-                "Page progression is now $progressionPct"
-            )
+        if (pageError) return
+
+        lastProgression = calculateProgression(webView)
+
+        val progressionPct: String = NumberFormat.getPercentInstance().let {
+            it.minimumFractionDigits = 1
+            it.format(lastProgression)
         }
+
+        Log.v(
+            TAG,
+            "Page progression is now $progressionPct"
+        )
     }
 
     private fun scrollWebView(progression: Float, wv: WebView?) {
@@ -216,12 +222,11 @@ class WebViewFragment : Fragment() {
         }, 2000)
     }
 
-    private fun setupDarkMode(menu: Menu) {
+    private fun matchSystemNightTheme(menu: Menu) {
         if ((Build.VERSION.SDK_INT >= Build.VERSION_CODES.R && resources.configuration.isNightModeActive) ||
             resources.configuration.uiMode.and(Configuration.UI_MODE_NIGHT_MASK) == Configuration.UI_MODE_NIGHT_YES
         ) {
-            menu.findItem(R.id.dark_mode).isChecked = true
-            WebSettingsCompat.setForceDark(webView.settings, WebSettingsCompat.FORCE_DARK_ON)
+            toggleDarkMode(menu.findItem(R.id.dark_mode))
         }
     }
 
@@ -229,7 +234,7 @@ class WebViewFragment : Fragment() {
         inflater.inflate(R.menu.menu_toolbar_webview, menu)
         if (WebViewFeature.isFeatureSupported(WebViewFeature.FORCE_DARK)) {
             // Automatically turn on dark mode if night mode on the device is active.
-            setupDarkMode(menu)
+            matchSystemNightTheme(menu)
         } else { // If forcing dark mode is not supported by the web view, hide the option to enable dark mode.
             menu.findItem(R.id.dark_mode).isVisible = false
         }
@@ -260,7 +265,7 @@ class WebViewFragment : Fragment() {
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
-        outState?.run {
+        outState.apply {
             putString(STATE_URL, lastVisitedUrl)
             putFloat(STATE_PROGRESSION, lastProgression)
         }
@@ -337,10 +342,5 @@ class WebViewFragment : Fragment() {
 
     private fun calculateScrollYFromProgression(progression: Float, wv: WebView): Int {
         return ((progression * wv.contentHeight) * resources.displayMetrics.density).toInt() + wv.top
-    }
-
-    companion object {
-        const val STATE_PROGRESSION = "novelProgression"
-        const val STATE_URL = "novelUrl"
     }
 }

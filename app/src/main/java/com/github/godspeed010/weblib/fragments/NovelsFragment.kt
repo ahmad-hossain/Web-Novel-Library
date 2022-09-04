@@ -207,9 +207,9 @@ class NovelsFragment : Fragment() {
     override fun onStop() {
         super.onStop()
 
-        Log.d(TAG, "onPause: previous novels num: ${args.folder.webNovels.size}")
+        Log.d(TAG, "onStop: previous novels num: ${args.folder.webNovels.size}")
         args.folder.webNovels = webNovelsList
-        Log.d(TAG, "onPause: new novels num: ${args.folder.webNovels.size}")
+        Log.d(TAG, "onStop: new novels num: ${args.folder.webNovels.size}")
 
         //load the old folders data
         val oldFolders = folderList
