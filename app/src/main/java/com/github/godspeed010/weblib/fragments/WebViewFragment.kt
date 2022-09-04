@@ -103,7 +103,9 @@ class WebViewFragment : Fragment() {
                 Log.d(TAG, "URL CHANGE to $url")
 
                 //Update address bar
-                requireView().findViewById<EditText>(R.id.et_address_bar).setText(url)
+                view.apply {
+                    findViewById<EditText>(R.id.et_address_bar).setText(url)
+                }
                 pageError = false
 
                 if (url != null && lastVisitedUrl != url) {
