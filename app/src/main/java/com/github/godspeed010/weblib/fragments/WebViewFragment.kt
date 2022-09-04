@@ -17,7 +17,7 @@ import androidx.webkit.WebSettingsCompat
 import androidx.webkit.WebViewFeature
 import com.github.godspeed010.weblib.R
 import com.github.godspeed010.weblib.hideKeyboard
-import com.github.godspeed010.weblib.data.PreferencesUtils
+import com.github.godspeed010.weblib.util.PreferencesUtils
 import com.google.android.gms.ads.AdRequest
 import com.google.android.gms.ads.AdView
 import com.google.android.gms.ads.MobileAds

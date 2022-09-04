@@ -1,7 +1,5 @@
 package com.github.godspeed010.weblib
 
-import android.content.Context
-import android.content.SharedPreferences
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.navigation.NavController
@@ -9,17 +7,14 @@ import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.setupWithNavController
 import com.github.godspeed010.weblib.databinding.ActivityMainBinding
-import com.github.godspeed010.weblib.models.Folder
+import com.github.godspeed010.weblib.util.loadJsonData
 import com.google.firebase.analytics.FirebaseAnalytics
 import com.google.firebase.analytics.ktx.analytics
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.ktx.database
 import com.google.firebase.ktx.Firebase
-import com.google.gson.Gson
 import timber.log.Timber
-
-private const val KEY_FOLDERS_DATA = "foldersList"
 
 class MainActivity : AppCompatActivity() {
 
@@ -51,16 +46,6 @@ class MainActivity : AppCompatActivity() {
                 _startingSaveData = it
             }
         }
-    }
-
-    private fun loadJsonData(): String? {
-        val sharedPreferences: SharedPreferences = getSharedPreferences("shared preferences", Context.MODE_PRIVATE)
-
-        val emptyList = Gson().toJson(ArrayList<Folder>())
-
-        val json = sharedPreferences.getString(KEY_FOLDERS_DATA, emptyList)
-
-        return json
     }
 
     private fun setupUi() {

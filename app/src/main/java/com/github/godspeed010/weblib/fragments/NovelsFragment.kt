@@ -26,7 +26,7 @@ import com.github.godspeed010.weblib.focusAndShowKeyboard
 import com.github.godspeed010.weblib.hideKeyboard
 import com.github.godspeed010.weblib.models.Folder
 import com.github.godspeed010.weblib.models.WebNovel
-import com.github.godspeed010.weblib.data.PreferencesUtils
+import com.github.godspeed010.weblib.util.PreferencesUtils
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.dialog.MaterialAlertDialogBuilder

@@ -2,7 +2,6 @@ package com.github.godspeed010.weblib.fragments
 
 import android.app.AlertDialog
 import android.content.Context
-import android.content.DialogInterface
 import android.content.Intent
 import android.content.SharedPreferences
 import android.os.Bundle
@@ -18,7 +17,7 @@ import com.github.godspeed010.weblib.R
 import com.github.godspeed010.weblib.databinding.FragmentAccountBinding
 import com.github.godspeed010.weblib.databinding.FragmentAccountSignOutBinding
 import com.github.godspeed010.weblib.getUserDataRef
-import com.github.godspeed010.weblib.models.Folder
+import com.github.godspeed010.weblib.util.loadJsonData
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
@@ -30,10 +29,10 @@ import com.google.firebase.auth.GoogleAuthProvider
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
+import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.ValueEventListener
 import com.google.firebase.database.ktx.database
 import com.google.firebase.ktx.Firebase
-import com.google.gson.Gson
 import timber.log.Timber
 
 private const val REQUEST_CODE_GOOGLE_SIGN_IN = 123
@@ -188,38 +187,45 @@ class AccountFragment : Fragment() {
         //show the progress bar. Data may take time to arrive
         setProgressBarVisibility(View.VISIBLE)
 
-        userFirebaseDataRef.addValueEventListener(object: ValueEventListener {
+        userFirebaseDataRef.addValueEventListener(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
-                //get the user's json data as String
-                val databaseJson = snapshot.getValue(String::class.java)
-                Timber.d("onDataChange: Found data in db: $databaseJson")
-
-                //hide the progress bar. Data has been received
-                setProgressBarVisibility(View.INVISIBLE)
-
-                //if local and cloud are conflicting
-                if (databaseJson != null && databaseJson != loadJsonData()) {
-                    Timber.d("onDataChange: CONFLICT between local and online")
-                    conflictAlertDialog(databaseJson)
-                } else {
-                    returnToLibrary()
-                    saveDataToFirebase()
-                }
-
-                //end the listener
-                userFirebaseDataRef.removeEventListener(this)
+                handleFirebaseDataChanged(snapshot, userFirebaseDataRef, this)
             }
 
             override fun onCancelled(error: DatabaseError) {
-                Timber.d("onCancelled")
+                handleFirebaseDataListenerCancelled(error)
             }
-
         })
+    }
+
+    private fun handleFirebaseDataChanged(snapshot: DataSnapshot, userFirebaseDataRef: DatabaseReference, eventListener: ValueEventListener) {
+        //get the user's json data as String
+        val databaseJson = snapshot.getValue(String::class.java)
+        Timber.d("onDataChange: Found data in db: $databaseJson")
+
+        //hide the progress bar. Data has been received
+        setProgressBarVisibility(View.INVISIBLE)
+
+        //if local and cloud are conflicting
+        if (databaseJson != null && databaseJson != _activity.loadJsonData()) {
+            Timber.d("onDataChange: CONFLICT between local and online")
+            conflictAlertDialog(databaseJson)
+        } else {
+            returnToLibrary()
+            saveDataToFirebase()
+        }
+
+        //end the listener
+        userFirebaseDataRef.removeEventListener(eventListener)
+    }
+
+    private fun handleFirebaseDataListenerCancelled(error: DatabaseError) {
+        Timber.e("onCancelled", error)
     }
 
     private fun saveDataToFirebase() {
         val user = Firebase.auth.currentUser
-        val currentSaveData = loadJsonData()
+        val currentSaveData = _activity.loadJsonData()
 
         if (user != null) {
             val database = Firebase.database
@@ -230,17 +236,6 @@ class AccountFragment : Fragment() {
                 .child(Constants.PATH_FIREBASE_DB_DATA)
                 .setValue(currentSaveData)
         }
-    }
-
-    private fun loadJsonData(): String? {
-        val sharedPreferences: SharedPreferences =
-            _activity.getSharedPreferences("shared preferences", Context.MODE_PRIVATE)
-
-        val emptyList = Gson().toJson(ArrayList<Folder>())
-
-        val json = sharedPreferences.getString("foldersList", emptyList)
-
-        return json
     }
 
     private fun saveJsonData(json: String) {
@@ -255,7 +250,7 @@ class AccountFragment : Fragment() {
         editor.apply()
     }
 
-    fun conflictAlertDialog(databaseJson: String) {
+    private fun conflictAlertDialog(databaseJson: String) {
         val builder = AlertDialog.Builder(context)
         builder.setTitle(getString(R.string.resolve_data_conflicts))
 
@@ -265,24 +260,24 @@ class AccountFragment : Fragment() {
         // Specify the type of input expected
         builder.setView(viewInflated)
 
-        builder.setPositiveButton(getString(R.string.local),
-            DialogInterface.OnClickListener { dialog, which ->
-                dialog.dismiss()
+        builder.setPositiveButton(getString(R.string.local)
+        ) { dialog, _ ->
+            dialog.dismiss()
 
-                //return to library Fragment
-                returnToLibrary()
-            })
+            //return to library Fragment
+            returnToLibrary()
+        }
 
-        builder.setNegativeButton(getString(R.string.online),
-            DialogInterface.OnClickListener { dialog, which ->
-                dialog.dismiss()
+        builder.setNegativeButton(getString(R.string.online)
+        ) { dialog, _ ->
+            dialog.dismiss()
 
-                //save the online database using saveJsonData()
-                saveJsonData(databaseJson)
+            //save the online database using saveJsonData()
+            saveJsonData(databaseJson)
 
-                //return to library Fragment
-                returnToLibrary()
-            })
+            //return to library Fragment
+            returnToLibrary()
+        }
 
         builder.setOnCancelListener {
             Timber.d("Alert Dialog CANCELED")
