@@ -320,8 +320,11 @@ class WebViewFragment : Fragment() {
         val folders = PreferencesUtils.loadFolders(activity)
 
         //update the url for the novel
-        folders[folderPosition].webNovels[novelPosition].url = lastVisitedUrl
-        folders[folderPosition].webNovels[novelPosition].progression = lastProgression
+        val currentNovel = folders[folderPosition].webNovels[novelPosition]
+        currentNovel.apply {
+            url = lastVisitedUrl
+            progression = lastProgression
+        }
 
         //save the updated data
         PreferencesUtils.saveFolders(activity, folders)
