@@ -79,19 +79,18 @@ class MainActivity : AppCompatActivity() {
         val user = Firebase.auth.currentUser
         val currentSaveData = loadJsonData()
 
-        if (user != null && _startingSaveData != currentSaveData) {
-            //reset the value for startingSaveData when backing up. ?May not be needed because app
-            if (currentSaveData != null) {
-                _startingSaveData = currentSaveData
-            }
+        if (user == null || _startingSaveData == currentSaveData) return
 
-            Log.d(TAG, "Found user and new save")
-
-            val databaseRef =
-                Firebase.database.getReference(resources.getString(R.string.fb_data_path, user.uid))
-
-            databaseRef.setValue(currentSaveData)
+        //reset the value for startingSaveData when backing up. ?May not be needed because app
+        if (currentSaveData != null) {
+            _startingSaveData = currentSaveData
         }
+
+        Log.d(TAG, "Found user and new save")
+
+        val databaseRef = Firebase.database.getReference(resources.getString(R.string.fb_data_path, user.uid))
+
+        databaseRef.setValue(currentSaveData)
     }
 
     private fun loadJsonData(): String? {
