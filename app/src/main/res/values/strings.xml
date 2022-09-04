@@ -25,7 +25,6 @@
     <string name="library">Library</string>
     <string name="account">Account</string>
     <string name="search">Search</string>
-    <string name="fb_data_path">"users/%s/data"</string>
     <string name="guide_press">Press</string>
     <string name="guide_add_novel">to Add a Novel</string>
     <string name="guide_create_folder">to Create a Folder</string>

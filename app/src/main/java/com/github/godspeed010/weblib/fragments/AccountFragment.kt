@@ -13,9 +13,11 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
+import com.github.godspeed010.weblib.Constants
 import com.github.godspeed010.weblib.R
 import com.github.godspeed010.weblib.databinding.FragmentAccountBinding
 import com.github.godspeed010.weblib.databinding.FragmentAccountSignOutBinding
+import com.github.godspeed010.weblib.getUserDataRef
 import com.github.godspeed010.weblib.models.Folder
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
@@ -54,29 +56,25 @@ class AccountFragment : Fragment() {
         val user = _auth.currentUser
         _activity = (activity as AppCompatActivity)
 
-        //todo rename this function
-        createRequest()
+        buildGoogleSignInClient()
 
-        // Inflate the layout for this fragment
         val view = updateUI(user, inflater, container, savedInstanceState)
 
         return view
     }
 
-    override fun onResume() {
-        super.onResume()
+    private fun buildGoogleSignInClient() {
+        // Configure Google Sign In
+        val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+            .requestIdToken(getString(R.string.default_web_client_id))
+            .requestEmail()
+            .build()
 
-        //set toolbar title
-        _activity.supportActionBar?.title = resources.getString(R.string.account)
+        _googleSignInClient = GoogleSignIn.getClient(_activity, gso)
     }
 
     //update UI based on user sign-in status
-    private fun updateUI(
-        user: FirebaseUser?,
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View {
+    private fun updateUI(user: FirebaseUser?, inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         return if (user == null) {
             createSignInLayout(inflater, container, savedInstanceState)
         } else {
@@ -98,6 +96,11 @@ class AccountFragment : Fragment() {
     private fun handleSignInClicked() {
         Timber.i("handleSignInClicked")
         signIn()
+    }
+
+    private fun signIn() {
+        val signInIntent = _googleSignInClient.signInIntent
+        startActivityForResult(signInIntent, REQUEST_CODE_GOOGLE_SIGN_IN)
     }
 
     private fun createSignOutLayout(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
@@ -129,26 +132,14 @@ class AccountFragment : Fragment() {
         returnToLibrary()
     }
 
-    private fun createRequest() {
-        // Configure Google Sign In
-        val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-            .requestIdToken(getString(R.string.default_web_client_id))
-            .requestEmail()
-            .build()
-
-        _googleSignInClient = GoogleSignIn.getClient(_activity, gso)
-    }
-
-    private fun signIn() {
-        val signInIntent = _googleSignInClient.signInIntent
-        startActivityForResult(signInIntent, REQUEST_CODE_GOOGLE_SIGN_IN)
-    }
-
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
+        Timber.i("onActivityResult: requestCode=$requestCode, resultCode=$resultCode")
 
         // Result returned from launching the Intent from GoogleSignInApi.getSignInIntent(...);
         if (requestCode == REQUEST_CODE_GOOGLE_SIGN_IN) {
+            //TODO move into handler func
+
             val task = GoogleSignIn.getSignedInAccountFromIntent(data)
             try {
                 // Google Sign In was successful, authenticate with Firebase
@@ -191,13 +182,13 @@ class AccountFragment : Fragment() {
     }
 
     private fun resolveDBConflicts(userID: String) {
-        //get reference to the user's path in firebase db
-        val databaseRef = Firebase.database.getReference(resources.getString(R.string.fb_data_path, userID))
+        //get reference to the user's data in firebase db
+        val userFirebaseDataRef = getUserDataRef(userID)
 
         //show the progress bar. Data may take time to arrive
         setProgressBarVisibility(View.VISIBLE)
 
-        databaseRef.addValueEventListener(object: ValueEventListener {
+        userFirebaseDataRef.addValueEventListener(object: ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 //get the user's json data as String
                 val databaseJson = snapshot.getValue(String::class.java)
@@ -216,7 +207,7 @@ class AccountFragment : Fragment() {
                 }
 
                 //end the listener
-                databaseRef.removeEventListener(this)
+                userFirebaseDataRef.removeEventListener(this)
             }
 
             override fun onCancelled(error: DatabaseError) {
@@ -234,9 +225,9 @@ class AccountFragment : Fragment() {
             val database = Firebase.database
             val myRef = database.reference
 
-            myRef.child("users")
+            myRef.child(Constants.PATH_FIREBASE_DB_USERS)
                 .child(user.uid)
-                .child("data")
+                .child(Constants.PATH_FIREBASE_DB_DATA)
                 .setValue(currentSaveData)
         }
     }
@@ -303,6 +294,13 @@ class AccountFragment : Fragment() {
 
     private fun setProgressBarVisibility(visibility: Int) {
         bindingSignIn.pbLayout.visibility = visibility
+    }
+
+    override fun onResume() {
+        super.onResume()
+
+        //set toolbar title
+        _activity.supportActionBar?.title = resources.getString(R.string.account)
     }
 
     override fun onDestroyView() {
