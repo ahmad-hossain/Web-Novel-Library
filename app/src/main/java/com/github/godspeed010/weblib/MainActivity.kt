@@ -17,6 +17,7 @@ import com.google.firebase.auth.ktx.auth
 import com.google.firebase.database.ktx.database
 import com.google.firebase.ktx.Firebase
 import com.google.gson.Gson
+import timber.log.Timber
 
 private const val KEY_FOLDERS_DATA = "foldersList"
 
@@ -68,6 +69,9 @@ class MainActivity : AppCompatActivity() {
         _binding.toolbar.setupWithNavController(_navController, appBarConfiguration)
     }
 
+    /**
+     * Saves the DB data from when the app is first started into the member variable [_startingSaveData]
+     */
     private fun setStartingSaveData() {
         loadJsonData().also {
             if (it != null) {
@@ -76,6 +80,9 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    /**
+     * If the local DB has changed, updates the Firebase DB for the user
+     */
     private fun saveDataToFirebase() {
         val user = Firebase.auth.currentUser
         val currentSaveData = loadJsonData()
