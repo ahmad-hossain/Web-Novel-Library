@@ -23,8 +23,6 @@ private const val KEY_FOLDERS_DATA = "foldersList"
 
 class MainActivity : AppCompatActivity() {
 
-    private val TAG = "MainActivity"
-
     private lateinit var _binding: ActivityMainBinding
     private lateinit var _startingSaveData: String
     private lateinit var _navController: NavController
@@ -81,20 +79,20 @@ class MainActivity : AppCompatActivity() {
     }
 
     /**
-     * If the local DB has changed, updates the Firebase DB for the user
+     * If the local DB has changed since the app start or the last Firebase sync, updates the Firebase DB for the user
      */
     private fun saveDataToFirebase() {
+        Timber.i("saveDataToFirebase")
         val user = Firebase.auth.currentUser
         val currentSaveData = loadJsonData()
 
         if (user == null || _startingSaveData == currentSaveData) return
+        Timber.i("saveDataToFirebase: DB has changed since app start, so updating Firebase DB")
 
         //reset the value for startingSaveData when backing up. ?May not be needed because app
         if (currentSaveData != null) {
             _startingSaveData = currentSaveData
         }
-
-        Log.d(TAG, "Found user and new save")
 
         val databaseRef = Firebase.database.getReference(resources.getString(R.string.fb_data_path, user.uid))
 

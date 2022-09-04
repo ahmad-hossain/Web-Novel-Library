@@ -1,9 +1,10 @@
 package com.github.godspeed010.weblib.fragments
 
 import android.R.attr.label
-import android.content.*
+import android.content.ClipData
+import android.content.ClipboardManager
+import android.content.Context
 import android.os.Bundle
-import android.util.Log
 import android.view.*
 import android.widget.LinearLayout
 import android.widget.TextView
@@ -17,24 +18,26 @@ import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.github.godspeed010.weblib.*
-import com.github.godspeed010.weblib.models.Folder
-import com.github.godspeed010.weblib.models.WebNovel
+import com.github.godspeed010.weblib.R
+import com.github.godspeed010.weblib.ReorderHelperCallback
 import com.github.godspeed010.weblib.adapters.MoveNovelAdapter
 import com.github.godspeed010.weblib.adapters.NovelsAdapter
+import com.github.godspeed010.weblib.focusAndShowKeyboard
+import com.github.godspeed010.weblib.hideKeyboard
+import com.github.godspeed010.weblib.models.Folder
+import com.github.godspeed010.weblib.models.WebNovel
+import com.github.godspeed010.weblib.preferences.PreferencesUtils
+import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.textfield.TextInputEditText
 import com.google.android.material.textfield.TextInputLayout
-import com.github.godspeed010.weblib.preferences.PreferencesUtils
-import com.google.android.material.bottomsheet.BottomSheetBehavior
-
+import timber.log.Timber
 
 class NovelsFragment : Fragment() {
 
     private val args by navArgs<NovelsFragmentArgs>()
 
-    private val TAG = "NovelsFragment"
     lateinit var webNovelsList: MutableList<WebNovel>
     lateinit var novelsAdapter: NovelsAdapter
 
@@ -52,7 +55,7 @@ class NovelsFragment : Fragment() {
 
         webNovelsList = folder.webNovels
 
-        Log.d(TAG, "opened folder with name: ${folder.name} and ${webNovelsList.size} novels")
+        Timber.d("opened folder with name: ${folder.name} and ${webNovelsList.size} novels")
 
         // populate RecyclerView
         val rclView = view.findViewById<RecyclerView>(R.id.recycler_view2)
@@ -60,7 +63,7 @@ class NovelsFragment : Fragment() {
         //click listener for RecyclerView items
         val onClickListener = object : NovelsAdapter.OnClickListener {
             override fun onItemClicked(position: Int) {
-                Log.d(TAG, "onItemClicked: clicked item $position")
+                Timber.d("onItemClicked: clicked item $position")
 
                 val action = NovelsFragmentDirections.actionNovelsFragmentToWebViewFragment(
                     url = webNovelsList[position].url,
@@ -72,7 +75,7 @@ class NovelsFragment : Fragment() {
             }
 
             override fun onCopyClicked(position: Int) {
-                Log.d(TAG, "onCopyClicked: clicked copy for index $position")
+                Timber.d("onCopyClicked: clicked copy for index $position")
 
                 copyToClipboard(webNovelsList[position].url)
 
@@ -80,7 +83,7 @@ class NovelsFragment : Fragment() {
             }
 
             override fun onMoreClicked(position: Int) {
-                Log.d(TAG, "onMoreClicked: clicked more for index $position")
+                Timber.d("onMoreClicked: clicked more for index $position")
                 showBottomSheetDialog(position)
             }
         }
@@ -179,7 +182,7 @@ class NovelsFragment : Fragment() {
             val title = webNovelTitle.text.toString()
             val url = webNovelUrl.text.toString()
 
-            Log.d(TAG, "new web novel requested: $title")
+            Timber.d("new web novel requested: $title")
 
             addNovel(title, url)
 
@@ -196,7 +199,7 @@ class NovelsFragment : Fragment() {
     }
 
     fun addNovel(title: String, url: String) {
-        Log.d(TAG, "adding new webNovel $title with url: $url")
+        Timber.d("adding new webNovel $title with url: $url")
         webNovelsList.add(WebNovel(title, url))
         novelsAdapter.notifyItemInserted(webNovelsList.size - 1)
 
@@ -207,9 +210,9 @@ class NovelsFragment : Fragment() {
     override fun onStop() {
         super.onStop()
 
-        Log.d(TAG, "onStop: previous novels num: ${args.folder.webNovels.size}")
+        Timber.d("onStop: previous novels num: ${args.folder.webNovels.size}")
         args.folder.webNovels = webNovelsList
-        Log.d(TAG, "onStop: new novels num: ${args.folder.webNovels.size}")
+        Timber.d("onStop: new novels num: ${args.folder.webNovels.size}")
 
         //load the old folders data
         val oldFolders = folderList
@@ -234,17 +237,17 @@ class NovelsFragment : Fragment() {
         val delete = bottomSheetDialog?.findViewById<LinearLayout>(R.id.ll_delete)
 
         move?.setOnClickListener {
-            Log.d(TAG, "showBottomSheetDialog: move clicked at $position")
+            Timber.d("showBottomSheetDialog: move clicked at $position")
             showFoldersBottomSheetDialog(position)
             bottomSheetDialog.dismiss()
         }
         edit?.setOnClickListener {
-            Log.d(TAG, "showBottomSheetDialog: edit clicked at index $position")
+            Timber.d("showBottomSheetDialog: edit clicked at index $position")
             editNovel(position)
             bottomSheetDialog.dismiss()
         }
         delete?.setOnClickListener {
-            Log.d(TAG, "showBottomSheetDialog: delete clicked at index $position")
+            Timber.d("showBottomSheetDialog: delete clicked at index $position")
 
             deleteNovel(position)
             bottomSheetDialog.dismiss()

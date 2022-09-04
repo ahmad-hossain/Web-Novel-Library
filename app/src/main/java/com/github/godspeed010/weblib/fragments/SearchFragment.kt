@@ -4,7 +4,6 @@ import android.content.*
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
-import android.util.Log
 import android.view.*
 import android.widget.EditText
 import android.widget.Toast
@@ -20,11 +19,9 @@ import com.github.godspeed010.weblib.adapters.NovelsAdapter
 import com.github.godspeed010.weblib.focusAndShowKeyboard
 import com.github.godspeed010.weblib.hideKeyboard
 import com.github.godspeed010.weblib.preferences.PreferencesUtils
-
+import timber.log.Timber
 
 class SearchFragment : Fragment() {
-
-    private val TAG = "SearchFragment"
 
     private lateinit var recyclerView: RecyclerView
     private lateinit var adapter: NovelsAdapter
@@ -67,7 +64,7 @@ class SearchFragment : Fragment() {
             }
 
             override fun onCopyClicked(position: Int) {
-                Log.d(TAG, "onCopyClicked: clicked copy for index $position")
+                Timber.d("onCopyClicked: clicked copy for index $position")
 
                 val clipboard: ClipboardManager? =
                     context?.let {

@@ -3,7 +3,6 @@ package com.github.godspeed010.weblib.fragments
 import android.content.res.ColorStateList
 import android.graphics.Rect
 import android.os.Bundle
-import android.util.Log
 import android.view.*
 import android.view.inputmethod.EditorInfo
 import android.widget.*
@@ -28,11 +27,9 @@ import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.textfield.TextInputEditText
-
+import timber.log.Timber
 
 class LibraryFragment : Fragment() {
-
-    private val TAG = "LibraryFragment"
 
     var folders = mutableListOf<Folder>()
     lateinit var folderAdapter: FolderAdapter
@@ -55,7 +52,7 @@ class LibraryFragment : Fragment() {
         //click listener for RecyclerView items
         val onClickListener = object : FolderAdapter.OnClickListener {
             override fun onItemClicked(position: Int) {
-                Log.d(TAG, "onItemClicked: clicked ${folders[position].name}")
+                Timber.d("onItemClicked: clicked ${folders[position].name}")
 
                 //navigate to NovelFragment and pass a Folder
                 val action = LibraryFragmentDirections
@@ -159,13 +156,13 @@ class LibraryFragment : Fragment() {
             dialog.dismiss()
             hideKeyboard()
 
-            Log.d(TAG, "new folder requested")
+            Timber.d("new folder requested")
 
             val selectedButton = inputColor.findViewById<RadioButton>(inputColor.checkedRadioButtonId)
 
             val folderColor = selectedButton.tag as FolderColor
 
-            Log.d(TAG, "Folder Color: " + folderColor.name)
+            Timber.d("Folder Color: " + folderColor.name)
 
             addFolder(folderName = input.text.toString(), folderColor = folderColor)
         }
@@ -203,7 +200,7 @@ class LibraryFragment : Fragment() {
     }
 
     private fun addFolder(folderName: String, folderColor: FolderColor) {
-        Log.d(TAG, "adding new folder: $folderName")
+        Timber.d("adding new folder: $folderName")
         folders.add(Folder(folderName, folderColor))
         folderAdapter.notifyItemInserted(folders.size - 1)
 
@@ -216,8 +213,8 @@ class LibraryFragment : Fragment() {
 
         PreferencesUtils.saveFolders(activity, folders)
 
-        Log.d(TAG, "stopping")
-        Log.d(TAG, "there are ${folders.size} folders ")
+        Timber.d("stopping")
+        Timber.d("there are ${folders.size} folders ")
     }
 
     fun showBottomSheetDialog(position: Int) {
@@ -232,12 +229,12 @@ class LibraryFragment : Fragment() {
 
 
         edit?.setOnClickListener {
-            Log.d(TAG, "showBottomSheetDialog: edit clicked at index $position")
+            Timber.d("showBottomSheetDialog: edit clicked at index $position")
             editFolderDialog(position)
             bottomSheetDialog.dismiss()
         }
         delete?.setOnClickListener {
-            Log.d(TAG, "showBottomSheetDialog: delete clicked at index $position")
+            Timber.d("showBottomSheetDialog: delete clicked at index $position")
 
             deleteFolder(position)
             bottomSheetDialog.dismiss()

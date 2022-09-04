@@ -6,8 +6,6 @@ import android.content.DialogInterface
 import android.content.Intent
 import android.content.SharedPreferences
 import android.os.Bundle
-import android.util.Log
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -16,9 +14,10 @@ import android.widget.FrameLayout
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
-import com.github.godspeed010.weblib.models.Folder
 import com.github.godspeed010.weblib.R
+import com.github.godspeed010.weblib.models.Folder
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
@@ -35,10 +34,9 @@ import com.google.firebase.database.ValueEventListener
 import com.google.firebase.database.ktx.database
 import com.google.firebase.ktx.Firebase
 import com.google.gson.Gson
+import timber.log.Timber
 
 class AccountFragment : Fragment() {
-
-    private val TAG = "AccountFragment"
 
     private lateinit var googleSignInClient: GoogleSignInClient
     private val RC_SIGN_IN = 123
@@ -87,7 +85,7 @@ class AccountFragment : Fragment() {
         val googleSignInButton = view.findViewById<SignInButton>(R.id.bt_google_sign_in)
 
         googleSignInButton.setOnClickListener {
-            Log.d(TAG, "Sign in button clicked")
+            Timber.d("Sign in button clicked")
             signIn()
         }
 
@@ -143,11 +141,11 @@ class AccountFragment : Fragment() {
             try {
                 // Google Sign In was successful, authenticate with Firebase
                 val account = task.getResult(ApiException::class.java)!!
-                Log.d(TAG, "firebaseAuthWithGoogle:" + account.id)
+                Timber.d("firebaseAuthWithGoogle:" + account.id)
                 firebaseAuthWithGoogle(account.idToken!!)
             } catch (e: ApiException) {
                 // Google Sign In failed, update UI appropriately
-                Log.w(TAG, "Google sign in failed", e)
+                Timber.w("Google sign in failed", e)
                 Toast.makeText(context, "Error ${e.message}", Toast.LENGTH_SHORT).show()
             }
         }
@@ -159,7 +157,7 @@ class AccountFragment : Fragment() {
             .addOnCompleteListener((activity as AppCompatActivity)) { task ->
                 if (task.isSuccessful) {
                     // Sign in success, update UI with the signed-in user's information
-                    Log.d(TAG, "signInWithCredential:success")
+                    Timber.d("signInWithCredential:success")
                     val user = auth.currentUser
                     Toast.makeText(context, "Signed in as ${user?.email}", Toast.LENGTH_SHORT).show()
 
@@ -170,7 +168,7 @@ class AccountFragment : Fragment() {
 
                 } else {
                     // If sign in fails, display a message to the user.
-                    Log.w(TAG, "signInWithCredential:failure", task.exception)
+                    Timber.w("signInWithCredential:failure", task.exception)
                     Toast.makeText(context, "Auth failed", Toast.LENGTH_SHORT).show()
                 }
             }
@@ -191,14 +189,14 @@ class AccountFragment : Fragment() {
             override fun onDataChange(snapshot: DataSnapshot) {
                 //get the user's json data as String
                 val databaseJson = snapshot.getValue(String::class.java)
-                Log.d(TAG, "onDataChange: Found data in db: $databaseJson")
+                Timber.d("onDataChange: Found data in db: $databaseJson")
 
                 //hide the progress bar. Data has been received
                 setProgressBarVisibility(View.INVISIBLE)
 
                 //if local and cloud are conflicting
                 if (databaseJson != null && databaseJson != loadJsonData()) {
-                    Log.d(TAG, "onDataChange: CONFLICT between local and online")
+                    Timber.d("onDataChange: CONFLICT between local and online")
                     conflictAlertDialog(databaseJson)
                 } else {
                     returnToLibrary()
@@ -210,7 +208,7 @@ class AccountFragment : Fragment() {
             }
 
             override fun onCancelled(error: DatabaseError) {
-                Log.d(TAG, "onCancelled")
+                Timber.d("onCancelled")
             }
 
         })
@@ -243,7 +241,7 @@ class AccountFragment : Fragment() {
     }
 
     fun saveJsonData(json: String) {
-        Log.d(TAG, "saveJsonData: Saving $json")
+        Timber.d("saveJsonData: Saving $json")
         val sharedPreferences: SharedPreferences =
             mActivity.getSharedPreferences("shared preferences", Context.MODE_PRIVATE)
 
@@ -284,7 +282,7 @@ class AccountFragment : Fragment() {
             })
 
         builder.setOnCancelListener {
-            Log.d(TAG, "Alert Dialog CANCELED")
+            Timber.d("Alert Dialog CANCELED")
             returnToLibrary()
         }
 

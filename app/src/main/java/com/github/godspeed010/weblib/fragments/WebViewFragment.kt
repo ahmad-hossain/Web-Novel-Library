@@ -2,7 +2,6 @@ package com.github.godspeed010.weblib.fragments
 
 import android.content.Intent
 import android.os.Bundle
-import android.util.Log
 import android.util.Patterns
 import android.view.*
 import android.webkit.WebView
@@ -24,12 +23,10 @@ import com.google.android.gms.ads.AdView
 import com.google.android.gms.ads.MobileAds
 import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.bottomnavigation.BottomNavigationView
+import timber.log.Timber
 import kotlin.properties.Delegates
 
-
 class WebViewFragment : Fragment() {
-
-    private val TAG = "WebViewFragment"
 
     lateinit var mainToolbar: MaterialToolbar
     lateinit var webViewToolbar: Toolbar
@@ -78,7 +75,7 @@ class WebViewFragment : Fragment() {
             override fun doUpdateVisitedHistory(wv: WebView?, url: String?, isReload: Boolean) {
                 super.doUpdateVisitedHistory(wv, url, isReload)
 
-                Log.d(TAG, "URL CHANGE to $url")
+                Timber.d("URL CHANGE to $url")
 
                 if (view != null) {
                     //Update address bar
@@ -105,7 +102,7 @@ class WebViewFragment : Fragment() {
         //address bar action listener for letting user change url
         view.findViewById<EditText>(R.id.et_address_bar)
             .setOnEditorActionListener { textView, i, keyEvent ->
-                Log.d(TAG, "Action in address bar")
+                Timber.d("Action in address bar")
 
                 hideKeyboard()
 
