@@ -1,38 +1,30 @@
 package com.github.godspeed010.weblib.fragments
 
-import android.content.Context
-import android.content.SharedPreferences
+import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.util.Patterns
 import android.view.*
-import android.view.inputmethod.InputMethodManager
-import androidx.fragment.app.Fragment
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import android.widget.EditText
 import androidx.appcompat.app.AppCompatActivity
-
 import androidx.appcompat.widget.Toolbar
+import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.setupWithNavController
 import androidx.webkit.WebSettingsCompat
 import androidx.webkit.WebViewFeature
+import com.github.godspeed010.weblib.R
+import com.github.godspeed010.weblib.hideKeyboard
+import com.github.godspeed010.weblib.preferences.PreferencesUtils
 import com.google.android.gms.ads.AdRequest
 import com.google.android.gms.ads.AdView
 import com.google.android.gms.ads.MobileAds
 import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.bottomnavigation.BottomNavigationView
-import com.google.gson.Gson
-import com.google.gson.reflect.TypeToken
-import java.lang.reflect.Type
 import kotlin.properties.Delegates
-import android.content.Intent
-import com.github.godspeed010.weblib.models.Folder
-import com.github.godspeed010.weblib.R
-import com.github.godspeed010.weblib.hideKeyboard
-import com.github.godspeed010.weblib.preferences.PreferencesUtils
 
 
 class WebViewFragment : Fragment() {
