@@ -240,7 +240,7 @@ class AccountFragment : Fragment() {
         return json
     }
 
-    fun saveJsonData(json: String) {
+    private fun saveJsonData(json: String) {
         Timber.d("saveJsonData: Saving $json")
         val sharedPreferences: SharedPreferences =
             mActivity.getSharedPreferences("shared preferences", Context.MODE_PRIVATE)

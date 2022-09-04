@@ -18,7 +18,7 @@ import com.github.godspeed010.weblib.models.WebNovel
 import com.github.godspeed010.weblib.adapters.NovelsAdapter
 import com.github.godspeed010.weblib.focusAndShowKeyboard
 import com.github.godspeed010.weblib.hideKeyboard
-import com.github.godspeed010.weblib.preferences.PreferencesUtils
+import com.github.godspeed010.weblib.data.PreferencesUtils
 import timber.log.Timber
 
 class SearchFragment : Fragment() {

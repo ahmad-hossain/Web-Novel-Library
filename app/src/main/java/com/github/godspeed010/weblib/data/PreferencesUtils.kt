@@ -1,4 +1,4 @@
-package com.github.godspeed010.weblib.preferences
+package com.github.godspeed010.weblib.data
 
 import android.app.Activity
 import android.content.Context

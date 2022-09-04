@@ -42,6 +42,27 @@ class MainActivity : AppCompatActivity() {
         _analytics = Firebase.analytics
     }
 
+    /**
+     * Saves the DB data from when the app is first started into the member variable [_startingSaveData]
+     */
+    private fun setStartingSaveData() {
+        loadJsonData().also {
+            if (it != null) {
+                _startingSaveData = it
+            }
+        }
+    }
+
+    private fun loadJsonData(): String? {
+        val sharedPreferences: SharedPreferences = getSharedPreferences("shared preferences", Context.MODE_PRIVATE)
+
+        val emptyList = Gson().toJson(ArrayList<Folder>())
+
+        val json = sharedPreferences.getString(KEY_FOLDERS_DATA, emptyList)
+
+        return json
+    }
+
     private fun setupUi() {
         val navHostFragment = supportFragmentManager.findFragmentById(R.id.nav_host_fragment) as NavHostFragment
         _navController = navHostFragment.navController
@@ -55,27 +76,16 @@ class MainActivity : AppCompatActivity() {
         _binding.bottomNav.setupWithNavController(_navController)
     }
 
-    override fun onStop() {
-        super.onStop()
-
-        saveDataToFirebase()
-    }
-
     private fun setupToolbarWithNav() {
         val builder = AppBarConfiguration.Builder(_navController.graph)
         val appBarConfiguration = builder.build()
         _binding.toolbar.setupWithNavController(_navController, appBarConfiguration)
     }
 
-    /**
-     * Saves the DB data from when the app is first started into the member variable [_startingSaveData]
-     */
-    private fun setStartingSaveData() {
-        loadJsonData().also {
-            if (it != null) {
-                _startingSaveData = it
-            }
-        }
+    override fun onStop() {
+        super.onStop()
+
+        saveDataToFirebase()
     }
 
     /**
@@ -97,15 +107,5 @@ class MainActivity : AppCompatActivity() {
         val databaseRef = Firebase.database.getReference(resources.getString(R.string.fb_data_path, user.uid))
 
         databaseRef.setValue(currentSaveData)
-    }
-
-    private fun loadJsonData(): String? {
-        val sharedPreferences: SharedPreferences = getSharedPreferences("shared preferences", Context.MODE_PRIVATE)
-
-        val emptyList = Gson().toJson(ArrayList<Folder>())
-
-        val json = sharedPreferences.getString(KEY_FOLDERS_DATA, emptyList)
-
-        return json
     }
 }

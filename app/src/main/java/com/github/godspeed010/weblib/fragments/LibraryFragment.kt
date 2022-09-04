@@ -16,13 +16,13 @@ import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.github.godspeed010.weblib.R
-import com.github.godspeed010.weblib.ReorderHelperCallback
+import com.github.godspeed010.weblib.util.ReorderHelperCallback
 import com.github.godspeed010.weblib.adapters.FolderAdapter
 import com.github.godspeed010.weblib.focusAndShowKeyboard
 import com.github.godspeed010.weblib.hideKeyboard
 import com.github.godspeed010.weblib.models.Folder
 import com.github.godspeed010.weblib.models.FolderColor
-import com.github.godspeed010.weblib.preferences.PreferencesUtils
+import com.github.godspeed010.weblib.data.PreferencesUtils
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.dialog.MaterialAlertDialogBuilder

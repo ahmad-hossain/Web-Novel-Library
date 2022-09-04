@@ -1,4 +1,4 @@
-package com.github.godspeed010.weblib;
+package com.github.godspeed010.weblib.util;
 
 import android.content.Context;
 import androidx.core.view.MotionEventCompat;
