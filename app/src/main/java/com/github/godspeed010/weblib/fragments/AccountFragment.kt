@@ -9,20 +9,18 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
-import android.widget.FrameLayout
-import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import com.github.godspeed010.weblib.R
+import com.github.godspeed010.weblib.databinding.FragmentAccountBinding
+import com.github.godspeed010.weblib.databinding.FragmentAccountSignOutBinding
 import com.github.godspeed010.weblib.models.Folder
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
-import com.google.android.gms.common.SignInButton
 import com.google.android.gms.common.api.ApiException
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
@@ -36,21 +34,27 @@ import com.google.firebase.ktx.Firebase
 import com.google.gson.Gson
 import timber.log.Timber
 
+private const val REQUEST_CODE_GOOGLE_SIGN_IN = 123
+
+//TODO reorder functions in chronological order
 class AccountFragment : Fragment() {
 
-    private lateinit var googleSignInClient: GoogleSignInClient
-    private val RC_SIGN_IN = 123
+    private var _bindingSignIn: FragmentAccountBinding? = null
+    private val bindingSignIn get() = _bindingSignIn!!
 
-    private lateinit var auth: FirebaseAuth
+    private var _bindingSignOut: FragmentAccountSignOutBinding? = null
+    private val bindingSignOut get() = _bindingSignOut!!
 
-    private lateinit var mActivity: AppCompatActivity
+    private lateinit var _googleSignInClient: GoogleSignInClient
+    private lateinit var _auth: FirebaseAuth
+    private lateinit var _activity: AppCompatActivity
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        auth = Firebase.auth
-        val user = auth.currentUser
+        _auth = Firebase.auth
+        val user = _auth.currentUser
+        _activity = (activity as AppCompatActivity)
 
-        mActivity = (activity as AppCompatActivity)
-
+        //todo rename this function
         createRequest()
 
         // Inflate the layout for this fragment
@@ -63,7 +67,7 @@ class AccountFragment : Fragment() {
         super.onResume()
 
         //set toolbar title
-        (activity as AppCompatActivity).supportActionBar?.title = resources.getString(R.string.account)
+        _activity.supportActionBar?.title = resources.getString(R.string.account)
     }
 
     //update UI based on user sign-in status
@@ -81,40 +85,48 @@ class AccountFragment : Fragment() {
     }
 
     private fun createSignInLayout(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
-        val view = inflater.inflate(R.layout.fragment_account, container, false)
-        val googleSignInButton = view.findViewById<SignInButton>(R.id.bt_google_sign_in)
+        _bindingSignIn = FragmentAccountBinding.inflate(inflater, container, false)
+        val view = bindingSignIn.root
 
-        googleSignInButton.setOnClickListener {
-            Timber.d("Sign in button clicked")
-            signIn()
+        bindingSignIn.btGoogleSignIn.setOnClickListener {
+            handleSignInClicked()
         }
 
         return view
     }
 
+    private fun handleSignInClicked() {
+        Timber.i("handleSignInClicked")
+        signIn()
+    }
+
     private fun createSignOutLayout(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
-        val view = inflater.inflate(R.layout.fragment_account_sign_out, container, false)
-        val signOutButton = view.findViewById<Button>(R.id.bt_sign_out)
-        val emailTextView = view.findViewById<TextView>(R.id.tv_email)
+        _bindingSignOut = FragmentAccountSignOutBinding.inflate(inflater, container, false)
+        val view = bindingSignOut.root
 
-        val signInAccount: GoogleSignInAccount? = GoogleSignIn.getLastSignedInAccount((activity as AppCompatActivity))
-        if (signInAccount != null) {
-            emailTextView.text = signInAccount.email
-        }
+        val signedInAccount: GoogleSignInAccount? = GoogleSignIn.getLastSignedInAccount(_activity)
 
-        signOutButton.setOnClickListener {
-            //save before sign out
-            saveDataToFirebase()
-
-            FirebaseAuth.getInstance().signOut() //sign out of firebase auth
-            googleSignInClient.signOut() //sign out of googleSignInClient so it doesn't auto-choose same account when signing in again
-            Toast.makeText(context, "Signed Out", Toast.LENGTH_SHORT).show()
-
-            //return to app main screen
-            returnToLibrary()
+        bindingSignOut.apply {
+            tvEmail.text = signedInAccount?.email ?: ""
+            btSignOut.setOnClickListener {
+                handleSignOutClicked()
+            }
         }
 
         return view
+    }
+
+    // Save before sign out
+    private fun handleSignOutClicked() {
+        Timber.i("handleSignOutClicked")
+        saveDataToFirebase()
+
+        FirebaseAuth.getInstance().signOut() //sign out of firebase auth
+        _googleSignInClient.signOut() //sign out of googleSignInClient so it doesn't auto-choose same account when signing in again
+        Toast.makeText(context, "Signed Out", Toast.LENGTH_SHORT).show()
+
+        //return to app main screen
+        returnToLibrary()
     }
 
     private fun createRequest() {
@@ -124,19 +136,19 @@ class AccountFragment : Fragment() {
             .requestEmail()
             .build()
 
-        googleSignInClient = GoogleSignIn.getClient((activity as AppCompatActivity), gso)
+        _googleSignInClient = GoogleSignIn.getClient(_activity, gso)
     }
 
     private fun signIn() {
-        val signInIntent = googleSignInClient.signInIntent
-        startActivityForResult(signInIntent, RC_SIGN_IN)
+        val signInIntent = _googleSignInClient.signInIntent
+        startActivityForResult(signInIntent, REQUEST_CODE_GOOGLE_SIGN_IN)
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
 
         // Result returned from launching the Intent from GoogleSignInApi.getSignInIntent(...);
-        if (requestCode == RC_SIGN_IN) {
+        if (requestCode == REQUEST_CODE_GOOGLE_SIGN_IN) {
             val task = GoogleSignIn.getSignedInAccountFromIntent(data)
             try {
                 // Google Sign In was successful, authenticate with Firebase
@@ -153,12 +165,12 @@ class AccountFragment : Fragment() {
 
     private fun firebaseAuthWithGoogle(idToken: String) {
         val credential = GoogleAuthProvider.getCredential(idToken, null)
-        auth.signInWithCredential(credential)
-            .addOnCompleteListener((activity as AppCompatActivity)) { task ->
+        _auth.signInWithCredential(credential)
+            .addOnCompleteListener(_activity) { task ->
                 if (task.isSuccessful) {
                     // Sign in success, update UI with the signed-in user's information
                     Timber.d("signInWithCredential:success")
-                    val user = auth.currentUser
+                    val user = _auth.currentUser
                     Toast.makeText(context, "Signed in as ${user?.email}", Toast.LENGTH_SHORT).show()
 
                     //Checks if local data is diff from firebase data. If so, choose whether to overwrite. Returns to libraryFragment afterwards
@@ -231,7 +243,7 @@ class AccountFragment : Fragment() {
 
     private fun loadJsonData(): String? {
         val sharedPreferences: SharedPreferences =
-            mActivity.getSharedPreferences("shared preferences", Context.MODE_PRIVATE)
+            _activity.getSharedPreferences("shared preferences", Context.MODE_PRIVATE)
 
         val emptyList = Gson().toJson(ArrayList<Folder>())
 
@@ -243,7 +255,7 @@ class AccountFragment : Fragment() {
     private fun saveJsonData(json: String) {
         Timber.d("saveJsonData: Saving $json")
         val sharedPreferences: SharedPreferences =
-            mActivity.getSharedPreferences("shared preferences", Context.MODE_PRIVATE)
+            _activity.getSharedPreferences("shared preferences", Context.MODE_PRIVATE)
 
         val editor = sharedPreferences.edit()
 
@@ -290,6 +302,12 @@ class AccountFragment : Fragment() {
     }
 
     private fun setProgressBarVisibility(visibility: Int) {
-        view?.findViewById<FrameLayout>(R.id.pb_layout)?.visibility = visibility
+        bindingSignIn.pbLayout.visibility = visibility
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _bindingSignIn = null
+        _bindingSignOut = null
     }
 }
