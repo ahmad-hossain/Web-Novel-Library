@@ -2,6 +2,7 @@ package com.github.godspeed010.weblib.fragments
 
 import android.app.AlertDialog
 import android.content.Context
+import android.content.DialogInterface
 import android.content.Intent
 import android.content.SharedPreferences
 import android.os.Bundle
@@ -154,8 +155,9 @@ class AccountFragment : Fragment() {
     }
 
     private fun firebaseAuthWithGoogle(idToken: String) {
-        val credential = GoogleAuthProvider.getCredential(idToken, null)
-        _auth.signInWithCredential(credential)
+        // Got an ID token from Google. Use it to authenticate with Firebase
+        val firebaseCredential = GoogleAuthProvider.getCredential(idToken, null)
+        _auth.signInWithCredential(firebaseCredential)
             .addOnCompleteListener(_activity) { task ->
                 if (task.isSuccessful) {
                     // Sign in success, update UI with the signed-in user's information
@@ -241,50 +243,48 @@ class AccountFragment : Fragment() {
     private fun saveJsonData(json: String) {
         Timber.d("saveJsonData: Saving $json")
         val sharedPreferences: SharedPreferences =
-            _activity.getSharedPreferences("shared preferences", Context.MODE_PRIVATE)
+            _activity.getSharedPreferences(Constants.KEY_SHARED_PREFERENCES, Context.MODE_PRIVATE)
 
         val editor = sharedPreferences.edit()
 
-        editor.putString("foldersList", json)
+        editor.putString(Constants.KEY_FOLDERS_DATA, json)
 
         editor.apply()
     }
 
     private fun conflictAlertDialog(databaseJson: String) {
-        val builder = AlertDialog.Builder(context)
-        builder.setTitle(getString(R.string.resolve_data_conflicts))
-
-        val viewInflated: View = LayoutInflater.from(context)
+        val viewInflated = LayoutInflater.from(context)
             .inflate(R.layout.popup_data_conflict, view as ViewGroup?, false)
-
-        // Specify the type of input expected
-        builder.setView(viewInflated)
-
-        builder.setPositiveButton(getString(R.string.local)
-        ) { dialog, _ ->
-            dialog.dismiss()
-
-            //return to library Fragment
-            returnToLibrary()
+        val builder = AlertDialog.Builder(context)
+        builder.apply {
+            setTitle(getString(R.string.resolve_data_conflicts))
+            setView(viewInflated)
+            setPositiveButton(getString(R.string.local)) { dialog, _ -> handleDialogLocalClicked(dialog) }
+            setNegativeButton(getString(R.string.online)) { dialog, _ -> handleDialogOnlineClicked(dialog, databaseJson) }
+            setOnCancelListener { handleDialogCancelled() }
         }
-
-        builder.setNegativeButton(getString(R.string.online)
-        ) { dialog, _ ->
-            dialog.dismiss()
-
-            //save the online database using saveJsonData()
-            saveJsonData(databaseJson)
-
-            //return to library Fragment
-            returnToLibrary()
-        }
-
-        builder.setOnCancelListener {
-            Timber.d("Alert Dialog CANCELED")
-            returnToLibrary()
-        }
-
         builder.show()
+    }
+
+    private fun handleDialogLocalClicked(dialog: DialogInterface) {
+        Timber.d("handleDialogLocalClicked()")
+        dialog.dismiss()
+        returnToLibrary()
+    }
+
+    private fun handleDialogOnlineClicked(dialog: DialogInterface, databaseJson: String) {
+        Timber.d("handleDialogOnlineClicked(): databaseJson = $databaseJson")
+        dialog.dismiss()
+
+        // overwrite local DB with cloud db
+        saveJsonData(databaseJson)
+
+        returnToLibrary()
+    }
+
+    private fun handleDialogCancelled() {
+        Timber.d("handleDialogCancelled()")
+        returnToLibrary()
     }
 
     private fun setProgressBarVisibility(visibility: Int) {
