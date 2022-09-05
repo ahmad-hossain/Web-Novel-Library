@@ -19,7 +19,7 @@
         android:layout_height="wrap_content">
 
         <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/input"
+            android:id="@+id/et_folder_name"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:imeOptions="actionDone"
@@ -33,7 +33,7 @@
         android:layout_height="15dp" />
 
     <RadioGroup
-        android:id="@+id/inputColor"
+        android:id="@+id/rg_colors"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:gravity="center"
