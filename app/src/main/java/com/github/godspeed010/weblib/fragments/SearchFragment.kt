@@ -62,7 +62,10 @@ class SearchFragment : Fragment() {
             override fun onItemClicked(position: Int) {
                 //send url, folder position, and novel position to WebViewFragment so it can save on its own
                 val action = SearchFragmentDirections
-                    .actionSearchFragmentToWebViewFragment(url = filteredList[position].url, folderPosition = filteredListIndices[position][0], novelPosition = filteredListIndices[position][1])
+                    .actionSearchFragmentToWebViewFragment(
+                        novel = filteredList[position],
+                        folderPosition = filteredListIndices[position][0],
+                        novelPosition = filteredListIndices[position][1])
                 view.findNavController().navigate(action)
             }
 
