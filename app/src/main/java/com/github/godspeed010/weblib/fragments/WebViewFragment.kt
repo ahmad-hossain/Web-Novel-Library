@@ -103,9 +103,7 @@ class WebViewFragment : Fragment() {
                 Log.d(TAG, "URL CHANGE to $url")
 
                 //Update address bar
-                view.apply {
-                    findViewById<EditText>(R.id.et_address_bar).setText(url)
-                }
+                view.findViewById<EditText>(R.id.et_address_bar).setText(url)
                 pageError = false
 
                 if (url != null && lastVisitedUrl != url) {
@@ -130,10 +128,7 @@ class WebViewFragment : Fragment() {
                 if ((loadedUrl == novel.url) && !pageError && lastProgression != 0f) {
                     scrollWebView(lastProgression, wv)
                 } else {
-                    view.apply {
-                        val progressBar = findViewById<View>(R.id.progressView)
-                        progressBar.visibility = View.GONE
-                    }
+                    view.findViewById<View>(R.id.progressView).visibility = View.GONE
                 }
             }
         }
