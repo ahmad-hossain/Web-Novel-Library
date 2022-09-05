@@ -119,7 +119,9 @@ class AccountFragment : Fragment() {
         return view
     }
 
-    // Save before sign out
+    /**
+     * Saves local DB to Firebase, signs out of Firebase & Google, then shows a confirmation Toast message
+     */
     private fun handleSignOutClicked() {
         Timber.i("Sign Out Clicked")
         saveDataToFirebase()
@@ -175,7 +177,7 @@ class AccountFragment : Fragment() {
 
         //Checks if local data is diff from firebase data. If so, choose whether to overwrite. Returns to libraryFragment afterwards
         if (user != null) {
-            resolveDBConflicts(user.uid)
+            resolveDBConflictsIfNeeded(user.uid)
         }
     }
 
@@ -188,7 +190,7 @@ class AccountFragment : Fragment() {
         findNavController().popBackStack()
     }
 
-    private fun resolveDBConflicts(userID: String) {
+    private fun resolveDBConflictsIfNeeded(userID: String) {
         //get reference to the user's data in firebase db
         val userFirebaseDataRef = getUserDataRef(userID)
 
