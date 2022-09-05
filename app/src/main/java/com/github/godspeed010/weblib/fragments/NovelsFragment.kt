@@ -8,7 +8,6 @@ import android.os.Bundle
 import android.view.*
 import android.widget.LinearLayout
 import android.widget.TextView
-import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.constraintlayout.widget.Group
 import androidx.core.content.ContextCompat.getSystemService
@@ -19,14 +18,11 @@ import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.github.godspeed010.weblib.R
-import com.github.godspeed010.weblib.util.ReorderHelperCallback
 import com.github.godspeed010.weblib.adapters.MoveNovelAdapter
 import com.github.godspeed010.weblib.adapters.NovelsAdapter
-import com.github.godspeed010.weblib.focusAndShowKeyboard
-import com.github.godspeed010.weblib.hideKeyboard
 import com.github.godspeed010.weblib.models.Folder
 import com.github.godspeed010.weblib.models.WebNovel
-import com.github.godspeed010.weblib.util.PreferencesUtils
+import com.github.godspeed010.weblib.util.*
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
@@ -79,7 +75,7 @@ class NovelsFragment : Fragment() {
 
                 copyToClipboard(webNovelsList[position].url)
 
-                Toast.makeText(context, "Copied URL!", Toast.LENGTH_SHORT).show()
+                toast(getString(R.string.copied_url))
             }
 
             override fun onMoreClicked(position: Int) {
@@ -338,11 +334,7 @@ class NovelsFragment : Fragment() {
 
                 bottomSheetDialog?.dismiss()
 
-                Toast.makeText(
-                    context,
-                    "Moved novel to ${folderNames[position]}",
-                    Toast.LENGTH_SHORT
-                ).show()
+                toast(getString(R.string.moved_novel_to, folderNames[position]))
             }
         }
 

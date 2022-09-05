@@ -28,4 +28,11 @@
     <string name="guide_press">Press</string>
     <string name="guide_add_novel">to Add a Novel</string>
     <string name="guide_create_folder">to Create a Folder</string>
+    <string name="signed_out">Signed Out</string>
+    <string name="signed_in_as">Signed in as %s</string>
+    <string name="error_msg">Error %s</string>
+    <string name="auth_failed">Auth failed</string>
+    <string name="copied_url">Copied URL!</string>
+    <string name="no_data_found">No Data Found..</string>
+    <string name="moved_novel_to">Moved Novel to %s</string>
 </resources>

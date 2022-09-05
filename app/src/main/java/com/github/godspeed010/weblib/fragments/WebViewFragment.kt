@@ -16,7 +16,7 @@ import androidx.navigation.ui.setupWithNavController
 import androidx.webkit.WebSettingsCompat
 import androidx.webkit.WebViewFeature
 import com.github.godspeed010.weblib.R
-import com.github.godspeed010.weblib.hideKeyboard
+import com.github.godspeed010.weblib.util.hideKeyboard
 import com.github.godspeed010.weblib.util.PreferencesUtils
 import com.google.android.gms.ads.AdRequest
 import com.google.android.gms.ads.AdView

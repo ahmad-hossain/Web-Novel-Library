@@ -9,7 +9,6 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
@@ -19,6 +18,7 @@ import com.github.godspeed010.weblib.databinding.FragmentAccountBinding
 import com.github.godspeed010.weblib.databinding.FragmentAccountSignOutBinding
 import com.github.godspeed010.weblib.getUserDataRef
 import com.github.godspeed010.weblib.util.loadJsonData
+import com.github.godspeed010.weblib.util.toast
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
@@ -35,6 +35,7 @@ import com.google.firebase.database.ValueEventListener
 import com.google.firebase.database.ktx.database
 import com.google.firebase.ktx.Firebase
 import timber.log.Timber
+import java.lang.Exception
 
 private const val REQUEST_CODE_GOOGLE_SIGN_IN = 123
 
@@ -126,7 +127,7 @@ class AccountFragment : Fragment() {
 
         FirebaseAuth.getInstance().signOut() //sign out of firebase auth
         _googleSignInClient.signOut() //sign out of googleSignInClient so it doesn't auto-choose same account when signing in again
-        Toast.makeText(context, "Signed Out", Toast.LENGTH_SHORT).show()
+        toast(getString(R.string.signed_out))
 
         //return to app main screen
         returnToLibrary()
@@ -148,8 +149,8 @@ class AccountFragment : Fragment() {
                 firebaseAuthWithGoogle(account.idToken!!)
             } catch (e: ApiException) {
                 // Google Sign In failed, update UI appropriately
-                Timber.w("Google sign in failed", e)
-                Toast.makeText(context, "Error ${e.message}", Toast.LENGTH_SHORT).show()
+                Timber.e("Google sign in failed", e)
+                toast(getString(R.string.error_msg, e.message))
             }
         }
     }
@@ -160,22 +161,29 @@ class AccountFragment : Fragment() {
         _auth.signInWithCredential(firebaseCredential)
             .addOnCompleteListener(_activity) { task ->
                 if (task.isSuccessful) {
-                    // Sign in success, update UI with the signed-in user's information
-                    Timber.d("signInWithCredential:success")
-                    val user = _auth.currentUser
-                    Toast.makeText(context, "Signed in as ${user?.email}", Toast.LENGTH_SHORT).show()
-
-                    //Checks if local data is diff from firebase data. If so, choose whether to overwrite. Returns to libraryFragment afterwards
-                    if (user != null) {
-                        resolveDBConflicts(user.uid)
-                    }
-
+                    handleSuccessfulSignIn()
                 } else {
-                    // If sign in fails, display a message to the user.
-                    Timber.w("signInWithCredential:failure", task.exception)
-                    Toast.makeText(context, "Auth failed", Toast.LENGTH_SHORT).show()
+                    handleUnsuccessfulSignIn(task.exception)
                 }
             }
+    }
+
+    private fun handleSuccessfulSignIn() {
+        Timber.d("Sign in SUCCESS")
+        // Sign in success, update UI with the signed-in user's information
+        val user = _auth.currentUser
+
+        toast(getString(R.string.signed_in_as, user?.email))
+
+        //Checks if local data is diff from firebase data. If so, choose whether to overwrite. Returns to libraryFragment afterwards
+        if (user != null) {
+            resolveDBConflicts(user.uid)
+        }
+    }
+
+    private fun handleUnsuccessfulSignIn(e: Exception?) {
+        Timber.e("Sign in FAILURE", e)
+        toast(getString(R.string.auth_failed))
     }
 
     private fun returnToLibrary() {

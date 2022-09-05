@@ -18,8 +18,8 @@ import androidx.recyclerview.widget.RecyclerView
 import com.github.godspeed010.weblib.R
 import com.github.godspeed010.weblib.util.ReorderHelperCallback
 import com.github.godspeed010.weblib.adapters.FolderAdapter
-import com.github.godspeed010.weblib.focusAndShowKeyboard
-import com.github.godspeed010.weblib.hideKeyboard
+import com.github.godspeed010.weblib.util.focusAndShowKeyboard
+import com.github.godspeed010.weblib.util.hideKeyboard
 import com.github.godspeed010.weblib.models.Folder
 import com.github.godspeed010.weblib.models.FolderColor
 import com.github.godspeed010.weblib.util.PreferencesUtils
