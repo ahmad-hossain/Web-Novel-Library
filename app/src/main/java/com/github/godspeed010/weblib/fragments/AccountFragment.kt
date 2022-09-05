@@ -39,14 +39,13 @@ import java.lang.Exception
 
 private const val REQUEST_CODE_GOOGLE_SIGN_IN = 123
 
-//TODO reorder functions in chronological order
 class AccountFragment : Fragment() {
 
-    private var _bindingSignIn: FragmentAccountBinding? = null
-    private val bindingSignIn get() = _bindingSignIn!!
+    private var bindingSignIn: FragmentAccountBinding? = null
+    private val _bindingSignIn get() = bindingSignIn!!
 
-    private var _bindingSignOut: FragmentAccountSignOutBinding? = null
-    private val bindingSignOut get() = _bindingSignOut!!
+    private var bindingSignOut: FragmentAccountSignOutBinding? = null
+    private val _bindingSignOut get() = bindingSignOut!!
 
     private lateinit var _googleSignInClient: GoogleSignInClient
     private lateinit var _auth: FirebaseAuth
@@ -84,10 +83,10 @@ class AccountFragment : Fragment() {
     }
 
     private fun createSignInLayout(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
-        _bindingSignIn = FragmentAccountBinding.inflate(inflater, container, false)
-        val view = bindingSignIn.root
+        bindingSignIn = FragmentAccountBinding.inflate(inflater, container, false)
+        val view = _bindingSignIn.root
 
-        bindingSignIn.btGoogleSignIn.setOnClickListener {
+        _bindingSignIn.btGoogleSignIn.setOnClickListener {
             handleSignInClicked()
         }
 
@@ -95,7 +94,7 @@ class AccountFragment : Fragment() {
     }
 
     private fun handleSignInClicked() {
-        Timber.i("handleSignInClicked")
+        Timber.i("Sign In Clicked")
         signIn()
     }
 
@@ -105,12 +104,12 @@ class AccountFragment : Fragment() {
     }
 
     private fun createSignOutLayout(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
-        _bindingSignOut = FragmentAccountSignOutBinding.inflate(inflater, container, false)
-        val view = bindingSignOut.root
+        bindingSignOut = FragmentAccountSignOutBinding.inflate(inflater, container, false)
+        val view = _bindingSignOut.root
 
         val signedInAccount: GoogleSignInAccount? = GoogleSignIn.getLastSignedInAccount(_activity)
 
-        bindingSignOut.apply {
+        _bindingSignOut.apply {
             tvEmail.text = signedInAccount?.email ?: ""
             btSignOut.setOnClickListener {
                 handleSignOutClicked()
@@ -122,7 +121,7 @@ class AccountFragment : Fragment() {
 
     // Save before sign out
     private fun handleSignOutClicked() {
-        Timber.i("handleSignOutClicked")
+        Timber.i("Sign Out Clicked")
         saveDataToFirebase()
 
         FirebaseAuth.getInstance().signOut() //sign out of firebase auth
@@ -135,27 +134,26 @@ class AccountFragment : Fragment() {
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
-        Timber.i("onActivityResult: requestCode=$requestCode, resultCode=$resultCode")
+        Timber.d("onActivityResult: requestCode=$requestCode, resultCode=$resultCode")
 
         // Result returned from launching the Intent from GoogleSignInApi.getSignInIntent(...);
-        if (requestCode == REQUEST_CODE_GOOGLE_SIGN_IN) {
-            //TODO move into handler func
+        if (requestCode == REQUEST_CODE_GOOGLE_SIGN_IN) handleGoogleSignInDialogResult(data)
+    }
 
-            val task = GoogleSignIn.getSignedInAccountFromIntent(data)
-            try {
-                // Google Sign In was successful, authenticate with Firebase
-                val account = task.getResult(ApiException::class.java)!!
-                Timber.d("firebaseAuthWithGoogle:" + account.id)
-                firebaseAuthWithGoogle(account.idToken!!)
-            } catch (e: ApiException) {
-                // Google Sign In failed, update UI appropriately
-                Timber.e("Google sign in failed", e)
-                toast(getString(R.string.error_msg, e.message))
-            }
+    private fun handleGoogleSignInDialogResult(data: Intent?) {
+        Timber.i("Returned from Google Sign In Dialog")
+        val task = GoogleSignIn.getSignedInAccountFromIntent(data)
+        try {
+            // Google Sign In was successful, authenticate with Firebase
+            val account = task.getResult(ApiException::class.java)!!
+            authFirebaseWithGoogle(account.idToken!!)
+        } catch (e: ApiException) {
+            Timber.e("Google sign in FAILED", e)
+            toast(getString(R.string.error_msg, e.message))
         }
     }
 
-    private fun firebaseAuthWithGoogle(idToken: String) {
+    private fun authFirebaseWithGoogle(idToken: String) {
         // Got an ID token from Google. Use it to authenticate with Firebase
         val firebaseCredential = GoogleAuthProvider.getCredential(idToken, null)
         _auth.signInWithCredential(firebaseCredential)
@@ -169,7 +167,7 @@ class AccountFragment : Fragment() {
     }
 
     private fun handleSuccessfulSignIn() {
-        Timber.d("Sign in SUCCESS")
+        Timber.d("Firebase Sign In SUCCESS")
         // Sign in success, update UI with the signed-in user's information
         val user = _auth.currentUser
 
@@ -182,7 +180,7 @@ class AccountFragment : Fragment() {
     }
 
     private fun handleUnsuccessfulSignIn(e: Exception?) {
-        Timber.e("Sign in FAILURE", e)
+        Timber.e("Firebase Sign In FAILURE", e)
         toast(getString(R.string.auth_failed))
     }
 
@@ -233,6 +231,10 @@ class AccountFragment : Fragment() {
         Timber.e("onCancelled", error)
     }
 
+    private fun setProgressBarVisibility(visibility: Int) {
+        _bindingSignIn.pbLayout.visibility = visibility
+    }
+
     private fun saveDataToFirebase() {
         val user = Firebase.auth.currentUser
         val currentSaveData = _activity.loadJsonData()
@@ -259,6 +261,10 @@ class AccountFragment : Fragment() {
 
         editor.apply()
     }
+
+    /**
+     * Conflict-Dialog Related Code
+     */
 
     private fun conflictAlertDialog(databaseJson: String) {
         val viewInflated = LayoutInflater.from(context)
@@ -295,9 +301,9 @@ class AccountFragment : Fragment() {
         returnToLibrary()
     }
 
-    private fun setProgressBarVisibility(visibility: Int) {
-        bindingSignIn.pbLayout.visibility = visibility
-    }
+    /**
+     * ************************************************
+     */
 
     override fun onResume() {
         super.onResume()
@@ -308,7 +314,7 @@ class AccountFragment : Fragment() {
 
     override fun onDestroyView() {
         super.onDestroyView()
-        _bindingSignIn = null
-        _bindingSignOut = null
+        bindingSignIn = null
+        bindingSignOut = null
     }
 }
