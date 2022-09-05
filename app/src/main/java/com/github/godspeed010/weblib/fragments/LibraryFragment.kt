@@ -216,7 +216,6 @@ class LibraryFragment : Fragment() {
 
         PreferencesUtils.saveFolders(activity, folders)
 
-        Log.d(TAG, "stopping")
         Log.d(TAG, "there are ${folders.size} folders ")
     }
 

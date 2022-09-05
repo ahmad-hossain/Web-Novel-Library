@@ -63,7 +63,7 @@ class NovelsFragment : Fragment() {
                 Log.d(TAG, "onItemClicked: clicked item $position")
 
                 val action = NovelsFragmentDirections.actionNovelsFragmentToWebViewFragment(
-                    url = webNovelsList[position].url,
+                    novel = webNovelsList[position],
                     novelPosition = position,
                     folderPosition = args.position
                 )
