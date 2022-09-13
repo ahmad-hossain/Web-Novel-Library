@@ -111,11 +111,7 @@ class WebViewFragment : Fragment() {
                 }
             }
 
-            override fun onReceivedError(
-                wv: WebView?,
-                request: WebResourceRequest?,
-                error: WebResourceError?
-            ) {
+            override fun onReceivedError(wv: WebView?, request: WebResourceRequest?, error: WebResourceError?) {
                 super.onReceivedError(wv, request, error)
 
                 if (request?.url.toString() == wv?.url) {
