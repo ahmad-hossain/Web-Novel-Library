@@ -202,8 +202,7 @@ class WebViewFragment : Fragment() {
 
     private fun scrollWebView(progression: Float, wv: WebView?) {
         // Fragment has been closed, no need to scroll web view anymore.
-        if(view == null)
-            return;
+        if (view == null) return
 
         val progressBar = requireView().findViewById<View>(R.id.progressView)
 
