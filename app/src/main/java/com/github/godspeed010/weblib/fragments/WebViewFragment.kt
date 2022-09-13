@@ -209,8 +209,7 @@ class WebViewFragment : Fragment() {
         progressBar.visibility = View.VISIBLE
         wv?.postDelayed({
             // Fragment has been closed, no need to scroll web view anymore.
-            if(context == null)
-                return@postDelayed;
+            if (context == null) return@postDelayed
 
             val scrollY: Int = calculateScrollYFromProgression(progression, wv)
             val progressionPct: String = NumberFormat.getPercentInstance().let {
