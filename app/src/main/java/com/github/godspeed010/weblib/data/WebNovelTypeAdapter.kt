@@ -1,4 +1,4 @@
-package com.github.godspeed010.weblib.preferences
+package com.github.godspeed010.weblib.data
 
 import com.google.gson.TypeAdapter
 import com.google.gson.stream.JsonReader

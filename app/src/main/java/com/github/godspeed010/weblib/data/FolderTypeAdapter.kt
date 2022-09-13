@@ -1,4 +1,4 @@
-package com.github.godspeed010.weblib.preferences
+package com.github.godspeed010.weblib.data
 
 import com.github.godspeed010.weblib.models.Folder
 import com.github.godspeed010.weblib.models.FolderColor

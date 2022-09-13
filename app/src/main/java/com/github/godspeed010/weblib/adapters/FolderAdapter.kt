@@ -51,7 +51,7 @@ class FolderAdapter(private val folders: MutableList<Folder>, val clickListener:
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val element = folders[position]
-        var color = ContextCompat.getColor(holder.folderImage.context, element.color.rgbId)
+        val color = ContextCompat.getColor(holder.folderImage.context, element.color.rgbId)
 
         holder.folderName.text = element.name
         holder.folderName.setTextColor(color)
@@ -59,7 +59,7 @@ class FolderAdapter(private val folders: MutableList<Folder>, val clickListener:
         val drawable = holder.folderImage.drawable
         if(drawable != null)
         {
-            val wrapped = DrawableCompat.wrap(drawable);
+            val wrapped = DrawableCompat.wrap(drawable)
             drawable.mutate()
             DrawableCompat.setTint(wrapped, color)
             holder.folderImage.setImageDrawable(drawable)

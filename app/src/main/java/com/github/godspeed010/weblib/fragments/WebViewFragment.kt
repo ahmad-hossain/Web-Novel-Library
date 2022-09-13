@@ -5,7 +5,6 @@ import android.content.Intent
 import android.content.res.Configuration
 import android.os.Build
 import android.os.Bundle
-import android.util.Log
 import android.util.Patterns
 import android.view.*
 import android.webkit.*
@@ -19,14 +18,15 @@ import androidx.navigation.ui.setupWithNavController
 import androidx.webkit.WebSettingsCompat
 import androidx.webkit.WebViewFeature
 import com.github.godspeed010.weblib.R
-import com.github.godspeed010.weblib.hideKeyboard
 import com.github.godspeed010.weblib.models.WebNovel
-import com.github.godspeed010.weblib.preferences.PreferencesUtils
+import com.github.godspeed010.weblib.util.PreferencesUtils
+import com.github.godspeed010.weblib.util.hideKeyboard
 import com.google.android.gms.ads.AdRequest
 import com.google.android.gms.ads.AdView
 import com.google.android.gms.ads.MobileAds
 import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.bottomnavigation.BottomNavigationView
+import timber.log.Timber
 import java.text.NumberFormat
 import kotlin.properties.Delegates
 
@@ -34,8 +34,6 @@ private const val STATE_PROGRESSION = "novelProgression"
 private const val STATE_URL = "novelUrl"
 
 class WebViewFragment : Fragment() {
-
-    private val TAG = "WebViewFragment"
 
     private var pageError = false
 
@@ -56,7 +54,8 @@ class WebViewFragment : Fragment() {
         // Inflate the layout for this fragment
         val view = inflater.inflate(R.layout.fragment_web_view, container, false)
 
-        navHostFragment = (activity as AppCompatActivity).supportFragmentManager.findFragmentById(R.id.nav_host_fragment) as NavHostFragment
+        navHostFragment =
+            (activity as AppCompatActivity).supportFragmentManager.findFragmentById(R.id.nav_host_fragment) as NavHostFragment
 
         val novel: WebNovel = WebViewFragmentArgs.fromBundle(requireArguments()).novel
         novelPosition = WebViewFragmentArgs.fromBundle(requireArguments()).novelPosition
@@ -76,7 +75,7 @@ class WebViewFragment : Fragment() {
         }
 
 
-        Log.d(TAG, "density=${resources.displayMetrics.density}, densityDpi=${resources.displayMetrics.densityDpi}")
+        Timber.d("density=${resources.displayMetrics.density}, densityDpi=${resources.displayMetrics.densityDpi}")
 
         setHasOptionsMenu(true)
 
@@ -100,7 +99,7 @@ class WebViewFragment : Fragment() {
             override fun doUpdateVisitedHistory(wv: WebView?, url: String?, isReload: Boolean) {
                 super.doUpdateVisitedHistory(wv, url, isReload)
 
-                Log.d(TAG, "URL CHANGE to $url")
+                Timber.d("URL CHANGE to $url")
 
                 //Update address bar
                 view.findViewById<EditText>(R.id.et_address_bar).setText(url)
@@ -115,9 +114,8 @@ class WebViewFragment : Fragment() {
             override fun onReceivedError(wv: WebView?, request: WebResourceRequest?, error: WebResourceError?) {
                 super.onReceivedError(wv, request, error)
 
-                if (request?.url.toString() == wv?.url)
-                {
-                    Log.d(TAG, "An error occurred while loading page, disabling scroll.")
+                if (request?.url.toString() == wv?.url) {
+                    Timber.d("An error occurred while loading page, disabling scroll.")
                     pageError = true
                 }
             }
@@ -135,7 +133,7 @@ class WebViewFragment : Fragment() {
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             webView.setOnScrollChangeListener { _, _, _, _, _ ->
-                if(pageError) return@setOnScrollChangeListener
+                if (pageError) return@setOnScrollChangeListener
                 updateProgression()
             }
         }
@@ -154,7 +152,7 @@ class WebViewFragment : Fragment() {
         //address bar action listener for letting user change url
         view.findViewById<EditText>(R.id.et_address_bar)
             .setOnEditorActionListener { textView, i, keyEvent ->
-                Log.d(TAG, "Action in address bar")
+                Timber.d("Action in address bar")
 
                 hideKeyboard()
 
@@ -194,10 +192,7 @@ class WebViewFragment : Fragment() {
             it.format(lastProgression)
         }
 
-        Log.v(
-            TAG,
-            "Page progression is now $progressionPct"
-        )
+        Timber.v("Page progression is now $progressionPct")
     }
 
     private fun scrollWebView(progression: Float, wv: WebView?) {
@@ -216,10 +211,7 @@ class WebViewFragment : Fragment() {
                 it.minimumFractionDigits = 1
                 it.format(progression)
             }
-            Log.d(
-                TAG,
-                "Page finished loading, scrolling to $scrollY ($progressionPct)"
-            )
+            Timber.d("Page finished loading, scrolling to $scrollY ($progressionPct)")
             wv.scrollTo(0, scrollY)
             progressBar.visibility = View.GONE
         }, 2000)
@@ -336,7 +328,7 @@ class WebViewFragment : Fragment() {
 
         //save the updated data
         PreferencesUtils.saveFolders(activity, folders)
-        Log.d(TAG, "Web Novel saved!")
+        Timber.d("Web Novel saved!")
     }
 
     private fun calculateProgression(wv: WebView): Float {

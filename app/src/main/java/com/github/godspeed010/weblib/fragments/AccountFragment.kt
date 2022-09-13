@@ -6,24 +6,23 @@ import android.content.DialogInterface
 import android.content.Intent
 import android.content.SharedPreferences
 import android.os.Bundle
-import android.util.Log
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
-import android.widget.FrameLayout
-import android.widget.TextView
-import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
-import com.github.godspeed010.weblib.models.Folder
+import com.github.godspeed010.weblib.Constants
 import com.github.godspeed010.weblib.R
+import com.github.godspeed010.weblib.databinding.FragmentAccountBinding
+import com.github.godspeed010.weblib.databinding.FragmentAccountSignOutBinding
+import com.github.godspeed010.weblib.getUserDataRef
+import com.github.godspeed010.weblib.util.loadJsonData
+import com.github.godspeed010.weblib.util.toast
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
-import com.google.android.gms.common.SignInButton
 import com.google.android.gms.common.api.ApiException
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
@@ -31,50 +30,51 @@ import com.google.firebase.auth.GoogleAuthProvider
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
+import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.ValueEventListener
 import com.google.firebase.database.ktx.database
 import com.google.firebase.ktx.Firebase
-import com.google.gson.Gson
+import timber.log.Timber
+import java.lang.Exception
+
+private const val REQUEST_CODE_GOOGLE_SIGN_IN = 123
 
 class AccountFragment : Fragment() {
 
-    private val TAG = "AccountFragment"
+    private var bindingSignIn: FragmentAccountBinding? = null
+    private val _bindingSignIn get() = bindingSignIn!!
 
-    private lateinit var googleSignInClient: GoogleSignInClient
-    private val RC_SIGN_IN = 123
+    private var bindingSignOut: FragmentAccountSignOutBinding? = null
+    private val _bindingSignOut get() = bindingSignOut!!
 
-    private lateinit var auth: FirebaseAuth
-
-    private lateinit var mActivity: AppCompatActivity
+    private lateinit var _googleSignInClient: GoogleSignInClient
+    private lateinit var _auth: FirebaseAuth
+    private lateinit var _activity: AppCompatActivity
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        auth = Firebase.auth
-        val user = auth.currentUser
+        _auth = Firebase.auth
+        val user = _auth.currentUser
+        _activity = (activity as AppCompatActivity)
 
-        mActivity = (activity as AppCompatActivity)
+        buildGoogleSignInClient()
 
-        createRequest()
-
-        // Inflate the layout for this fragment
         val view = updateUI(user, inflater, container, savedInstanceState)
 
         return view
     }
 
-    override fun onResume() {
-        super.onResume()
+    private fun buildGoogleSignInClient() {
+        // Configure Google Sign In
+        val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+            .requestIdToken(getString(R.string.default_web_client_id))
+            .requestEmail()
+            .build()
 
-        //set toolbar title
-        (activity as AppCompatActivity).supportActionBar?.title = resources.getString(R.string.account)
+        _googleSignInClient = GoogleSignIn.getClient(_activity, gso)
     }
 
     //update UI based on user sign-in status
-    private fun updateUI(
-        user: FirebaseUser?,
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View {
+    private fun updateUI(user: FirebaseUser?, inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         return if (user == null) {
             createSignInLayout(inflater, container, savedInstanceState)
         } else {
@@ -83,215 +83,240 @@ class AccountFragment : Fragment() {
     }
 
     private fun createSignInLayout(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
-        val view = inflater.inflate(R.layout.fragment_account, container, false)
-        val googleSignInButton = view.findViewById<SignInButton>(R.id.bt_google_sign_in)
+        bindingSignIn = FragmentAccountBinding.inflate(inflater, container, false)
+        val view = _bindingSignIn.root
 
-        googleSignInButton.setOnClickListener {
-            Log.d(TAG, "Sign in button clicked")
-            signIn()
+        _bindingSignIn.btGoogleSignIn.setOnClickListener {
+            handleSignInClicked()
         }
 
         return view
     }
 
-    private fun createSignOutLayout(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
-        val view = inflater.inflate(R.layout.fragment_account_sign_out, container, false)
-        val signOutButton = view.findViewById<Button>(R.id.bt_sign_out)
-        val emailTextView = view.findViewById<TextView>(R.id.tv_email)
-
-        val signInAccount: GoogleSignInAccount? = GoogleSignIn.getLastSignedInAccount((activity as AppCompatActivity))
-        if (signInAccount != null) {
-            emailTextView.text = signInAccount.email
-        }
-
-        signOutButton.setOnClickListener {
-            //save before sign out
-            saveDataToFirebase()
-
-            FirebaseAuth.getInstance().signOut() //sign out of firebase auth
-            googleSignInClient.signOut() //sign out of googleSignInClient so it doesn't auto-choose same account when signing in again
-            Toast.makeText(context, "Signed Out", Toast.LENGTH_SHORT).show()
-
-            //return to app main screen
-            returnToLibrary()
-        }
-
-        return view
-    }
-
-    private fun createRequest() {
-        // Configure Google Sign In
-        val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-            .requestIdToken(getString(R.string.default_web_client_id))
-            .requestEmail()
-            .build()
-
-        googleSignInClient = GoogleSignIn.getClient((activity as AppCompatActivity), gso)
+    private fun handleSignInClicked() {
+        Timber.i("Sign In Clicked")
+        signIn()
     }
 
     private fun signIn() {
-        val signInIntent = googleSignInClient.signInIntent
-        startActivityForResult(signInIntent, RC_SIGN_IN)
+        val signInIntent = _googleSignInClient.signInIntent
+        startActivityForResult(signInIntent, REQUEST_CODE_GOOGLE_SIGN_IN)
+    }
+
+    private fun createSignOutLayout(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
+        bindingSignOut = FragmentAccountSignOutBinding.inflate(inflater, container, false)
+        val view = _bindingSignOut.root
+
+        val signedInAccount: GoogleSignInAccount? = GoogleSignIn.getLastSignedInAccount(_activity)
+
+        _bindingSignOut.apply {
+            tvEmail.text = signedInAccount?.email ?: ""
+            btSignOut.setOnClickListener {
+                handleSignOutClicked()
+            }
+        }
+
+        return view
+    }
+
+    /**
+     * Saves local DB to Firebase, signs out of Firebase & Google, then shows a confirmation Toast message
+     */
+    private fun handleSignOutClicked() {
+        Timber.i("Sign Out Clicked")
+        saveDataToFirebase()
+
+        FirebaseAuth.getInstance().signOut() //sign out of firebase auth
+        _googleSignInClient.signOut() //sign out of googleSignInClient so it doesn't auto-choose same account when signing in again
+        toast(getString(R.string.signed_out))
+
+        //return to app main screen
+        returnToLibrary()
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
+        Timber.d("onActivityResult: requestCode=$requestCode, resultCode=$resultCode")
 
         // Result returned from launching the Intent from GoogleSignInApi.getSignInIntent(...);
-        if (requestCode == RC_SIGN_IN) {
-            val task = GoogleSignIn.getSignedInAccountFromIntent(data)
-            try {
-                // Google Sign In was successful, authenticate with Firebase
-                val account = task.getResult(ApiException::class.java)!!
-                Log.d(TAG, "firebaseAuthWithGoogle:" + account.id)
-                firebaseAuthWithGoogle(account.idToken!!)
-            } catch (e: ApiException) {
-                // Google Sign In failed, update UI appropriately
-                Log.w(TAG, "Google sign in failed", e)
-                Toast.makeText(context, "Error ${e.message}", Toast.LENGTH_SHORT).show()
-            }
+        if (requestCode == REQUEST_CODE_GOOGLE_SIGN_IN) handleGoogleSignInDialogResult(data)
+    }
+
+    private fun handleGoogleSignInDialogResult(data: Intent?) {
+        Timber.i("Returned from Google Sign In Dialog")
+        val task = GoogleSignIn.getSignedInAccountFromIntent(data)
+        try {
+            // Google Sign In was successful, authenticate with Firebase
+            val account = task.getResult(ApiException::class.java)!!
+            authFirebaseWithGoogle(account.idToken!!)
+        } catch (e: ApiException) {
+            Timber.e("Google sign in FAILED", e)
+            toast(getString(R.string.error_msg, e.message))
         }
     }
 
-    private fun firebaseAuthWithGoogle(idToken: String) {
-        val credential = GoogleAuthProvider.getCredential(idToken, null)
-        auth.signInWithCredential(credential)
-            .addOnCompleteListener((activity as AppCompatActivity)) { task ->
+    private fun authFirebaseWithGoogle(idToken: String) {
+        // Got an ID token from Google. Use it to authenticate with Firebase
+        val firebaseCredential = GoogleAuthProvider.getCredential(idToken, null)
+        _auth.signInWithCredential(firebaseCredential)
+            .addOnCompleteListener(_activity) { task ->
                 if (task.isSuccessful) {
-                    // Sign in success, update UI with the signed-in user's information
-                    Log.d(TAG, "signInWithCredential:success")
-                    val user = auth.currentUser
-                    Toast.makeText(context, "Signed in as ${user?.email}", Toast.LENGTH_SHORT).show()
-
-                    //Checks if local data is diff from firebase data. If so, choose whether to overwrite. Returns to libraryFragment afterwards
-                    if (user != null) {
-                        resolveDBConflicts(user.uid)
-                    }
-
+                    handleSuccessfulSignIn()
                 } else {
-                    // If sign in fails, display a message to the user.
-                    Log.w(TAG, "signInWithCredential:failure", task.exception)
-                    Toast.makeText(context, "Auth failed", Toast.LENGTH_SHORT).show()
+                    handleUnsuccessfulSignIn(task.exception)
                 }
             }
+    }
+
+    private fun handleSuccessfulSignIn() {
+        Timber.d("Firebase Sign In SUCCESS")
+        // Sign in success, update UI with the signed-in user's information
+        val user = _auth.currentUser
+
+        toast(getString(R.string.signed_in_as, user?.email))
+
+        //Checks if local data is diff from firebase data. If so, choose whether to overwrite. Returns to libraryFragment afterwards
+        if (user != null) {
+            resolveDBConflictsIfNeeded(user.uid)
+        }
+    }
+
+    private fun handleUnsuccessfulSignIn(e: Exception?) {
+        Timber.e("Firebase Sign In FAILURE", e)
+        toast(getString(R.string.auth_failed))
     }
 
     private fun returnToLibrary() {
         findNavController().popBackStack()
     }
 
-    private fun resolveDBConflicts(userID: String) {
-        //get reference to the user's path in firebase db
-        val databaseRef = Firebase.database.getReference(resources.getString(R.string.fb_data_path, userID))
+    private fun resolveDBConflictsIfNeeded(userID: String) {
+        //get reference to the user's data in firebase db
+        val userFirebaseDataRef = getUserDataRef(userID)
 
         //show the progress bar. Data may take time to arrive
         setProgressBarVisibility(View.VISIBLE)
 
-        databaseRef.addValueEventListener(object: ValueEventListener {
+        userFirebaseDataRef.addValueEventListener(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
-                //get the user's json data as String
-                val databaseJson = snapshot.getValue(String::class.java)
-                Log.d(TAG, "onDataChange: Found data in db: $databaseJson")
-
-                //hide the progress bar. Data has been received
-                setProgressBarVisibility(View.INVISIBLE)
-
-                //if local and cloud are conflicting
-                if (databaseJson != null && databaseJson != loadJsonData()) {
-                    Log.d(TAG, "onDataChange: CONFLICT between local and online")
-                    conflictAlertDialog(databaseJson)
-                } else {
-                    returnToLibrary()
-                    saveDataToFirebase()
-                }
-
-                //end the listener
-                databaseRef.removeEventListener(this)
+                handleFirebaseDataChanged(snapshot, userFirebaseDataRef, this)
             }
 
             override fun onCancelled(error: DatabaseError) {
-                Log.d(TAG, "onCancelled")
+                handleFirebaseDataListenerCancelled(error)
             }
-
         })
+    }
+
+    private fun handleFirebaseDataChanged(snapshot: DataSnapshot, userFirebaseDataRef: DatabaseReference, eventListener: ValueEventListener) {
+        //get the user's json data as String
+        val databaseJson = snapshot.getValue(String::class.java)
+        Timber.d("onDataChange: Found data in db: $databaseJson")
+
+        //hide the progress bar. Data has been received
+        setProgressBarVisibility(View.INVISIBLE)
+
+        //if local and cloud are conflicting
+        if (databaseJson != null && databaseJson != _activity.loadJsonData()) {
+            Timber.d("onDataChange: CONFLICT between local and online")
+            conflictAlertDialog(databaseJson)
+        } else {
+            returnToLibrary()
+            saveDataToFirebase()
+        }
+
+        //end the listener
+        userFirebaseDataRef.removeEventListener(eventListener)
+    }
+
+    private fun handleFirebaseDataListenerCancelled(error: DatabaseError) {
+        Timber.e("onCancelled", error)
+    }
+
+    private fun setProgressBarVisibility(visibility: Int) {
+        _bindingSignIn.pbLayout.visibility = visibility
     }
 
     private fun saveDataToFirebase() {
         val user = Firebase.auth.currentUser
-        val currentSaveData = loadJsonData()
+        val currentSaveData = _activity.loadJsonData()
 
         if (user != null) {
             val database = Firebase.database
             val myRef = database.reference
 
-            myRef.child("users")
+            myRef.child(Constants.PATH_FIREBASE_DB_USERS)
                 .child(user.uid)
-                .child("data")
+                .child(Constants.PATH_FIREBASE_DB_DATA)
                 .setValue(currentSaveData)
         }
     }
 
-    private fun loadJsonData(): String? {
+    private fun saveJsonData(json: String) {
+        Timber.d("saveJsonData: Saving $json")
         val sharedPreferences: SharedPreferences =
-            mActivity.getSharedPreferences("shared preferences", Context.MODE_PRIVATE)
-
-        val emptyList = Gson().toJson(ArrayList<Folder>())
-
-        val json = sharedPreferences.getString("foldersList", emptyList)
-
-        return json
-    }
-
-    fun saveJsonData(json: String) {
-        Log.d(TAG, "saveJsonData: Saving $json")
-        val sharedPreferences: SharedPreferences =
-            mActivity.getSharedPreferences("shared preferences", Context.MODE_PRIVATE)
+            _activity.getSharedPreferences(Constants.KEY_SHARED_PREFERENCES, Context.MODE_PRIVATE)
 
         val editor = sharedPreferences.edit()
 
-        editor.putString("foldersList", json)
+        editor.putString(Constants.KEY_FOLDERS_DATA, json)
 
         editor.apply()
     }
 
-    fun conflictAlertDialog(databaseJson: String) {
-        val builder = AlertDialog.Builder(context)
-        builder.setTitle(getString(R.string.resolve_data_conflicts))
+    /**
+     * Conflict-Dialog Related Code
+     */
 
-        val viewInflated: View = LayoutInflater.from(context)
+    private fun conflictAlertDialog(databaseJson: String) {
+        val viewInflated = LayoutInflater.from(context)
             .inflate(R.layout.popup_data_conflict, view as ViewGroup?, false)
-
-        // Specify the type of input expected
-        builder.setView(viewInflated)
-
-        builder.setPositiveButton(getString(R.string.local),
-            DialogInterface.OnClickListener { dialog, which ->
-                dialog.dismiss()
-
-                //return to library Fragment
-                returnToLibrary()
-            })
-
-        builder.setNegativeButton(getString(R.string.online),
-            DialogInterface.OnClickListener { dialog, which ->
-                dialog.dismiss()
-
-                //save the online database using saveJsonData()
-                saveJsonData(databaseJson)
-
-                //return to library Fragment
-                returnToLibrary()
-            })
-
-        builder.setOnCancelListener {
-            Log.d(TAG, "Alert Dialog CANCELED")
-            returnToLibrary()
+        val builder = AlertDialog.Builder(context)
+        builder.apply {
+            setTitle(getString(R.string.resolve_data_conflicts))
+            setView(viewInflated)
+            setPositiveButton(getString(R.string.local)) { dialog, _ -> handleDialogLocalClicked(dialog) }
+            setNegativeButton(getString(R.string.online)) { dialog, _ -> handleDialogOnlineClicked(dialog, databaseJson) }
+            setOnCancelListener { handleDialogCancelled() }
         }
-
         builder.show()
     }
 
-    private fun setProgressBarVisibility(visibility: Int) {
-        view?.findViewById<FrameLayout>(R.id.pb_layout)?.visibility = visibility
+    private fun handleDialogLocalClicked(dialog: DialogInterface) {
+        Timber.d("handleDialogLocalClicked()")
+        dialog.dismiss()
+        returnToLibrary()
+    }
+
+    private fun handleDialogOnlineClicked(dialog: DialogInterface, databaseJson: String) {
+        Timber.d("handleDialogOnlineClicked(): databaseJson = $databaseJson")
+        dialog.dismiss()
+
+        // overwrite local DB with cloud db
+        saveJsonData(databaseJson)
+
+        returnToLibrary()
+    }
+
+    private fun handleDialogCancelled() {
+        Timber.d("handleDialogCancelled()")
+        returnToLibrary()
+    }
+
+    /**
+     * ************************************************
+     */
+
+    override fun onResume() {
+        super.onResume()
+
+        //set toolbar title
+        _activity.supportActionBar?.title = resources.getString(R.string.account)
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        bindingSignIn = null
+        bindingSignOut = null
     }
 }
