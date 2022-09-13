@@ -34,6 +34,7 @@ class LibraryFragment : Fragment() {
     private var binding: FragmentLibraryBinding? = null
     private val _binding get() = binding!!
 
+    private lateinit var _activity: AppCompatActivity
     private var _folders = mutableListOf<Folder>()
     private lateinit var _folderAdapter: FolderAdapter
 
@@ -42,12 +43,13 @@ class LibraryFragment : Fragment() {
         val view = _binding.root
 
         _folders = PreferencesUtils.loadFolders(activity)
+        _activity = (activity as AppCompatActivity)
 
         //set toolbar buttons; required for fragments
         setHasOptionsMenu(true)
 
         //set toolbar title
-        (activity as AppCompatActivity).supportActionBar?.title = resources.getString(R.string.library)
+        _activity.supportActionBar?.title = resources.getString(R.string.library)
 
         //click listener for RecyclerView items
         val onClickListener = object : FolderAdapter.OnClickListener {
@@ -129,10 +131,7 @@ class LibraryFragment : Fragment() {
     }
 
     private fun addFolderDialog() {
-        val builder = MaterialAlertDialogBuilder(
-            (activity as AppCompatActivity),
-            R.style.AlertDialogTheme
-        )
+        val builder = MaterialAlertDialogBuilder(_activity, R.style.AlertDialogTheme)
 
         val viewInflated: View = LayoutInflater.from(context)
             .inflate(R.layout.popup_folder_name, view as ViewGroup?, false)
@@ -252,7 +251,7 @@ class LibraryFragment : Fragment() {
     }
 
     private fun editFolderDialog(position: Int) {
-        val builder = MaterialAlertDialogBuilder((activity as AppCompatActivity), R.style.AlertDialogTheme)
+        val builder = MaterialAlertDialogBuilder(_activity, R.style.AlertDialogTheme)
         val dialogBinding = PopupFolderNameBinding.inflate(layoutInflater)
         builder.setView(dialogBinding.root)
 
